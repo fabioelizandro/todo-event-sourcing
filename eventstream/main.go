@@ -9,7 +9,6 @@ type Event interface {
 	Type() string
 	AggregateID() string
 	AggregateType() string
-	AggregateVersion() int64
 	Payload() ([]byte, error)
 }
 

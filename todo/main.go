@@ -12,6 +12,11 @@ type CmdTaskCreate struct {
 	Description string
 }
 
+type CmdTaskUpdateDescription struct {
+	ID             string
+	NewDescription string
+}
+
 //// EVENTS
 
 type EvtTaskCreated struct {
@@ -31,11 +36,28 @@ func (e *EvtTaskCreated) AggregateType() string {
 	return "TASK"
 }
 
-func (e *EvtTaskCreated) AggregateVersion() int64 {
-	return 1
+func (e *EvtTaskCreated) Payload() ([]byte, error) {
+	return json.Marshal(e)
 }
 
-func (e *EvtTaskCreated) Payload() ([]byte, error) {
+type EvtTaskDescriptionUpdated struct {
+	ID          string
+	Description string
+}
+
+func (e *EvtTaskDescriptionUpdated) Type() string {
+	return "TASK_DESCRIPTION_UPDATED"
+}
+
+func (e *EvtTaskDescriptionUpdated) AggregateID() string {
+	return e.ID
+}
+
+func (e *EvtTaskDescriptionUpdated) AggregateType() string {
+	return "TASK"
+}
+
+func (e *EvtTaskDescriptionUpdated) Payload() ([]byte, error) {
 	return json.Marshal(e)
 }
 
@@ -68,6 +90,8 @@ func (c *cmdHandler) Handle(cmd interface{}) error {
 	switch v := cmd.(type) {
 	case *CmdTaskCreate:
 		return c.handleCmdTaskCreate(v)
+	case *CmdTaskUpdateDescription:
+		return c.handleCmdTaskUpdateDescription(v)
 	default:
 		return nil
 	}
@@ -93,6 +117,32 @@ func (c *cmdHandler) handleCmdTaskCreate(cmd *CmdTaskCreate) error {
 		&EvtTaskCreated{
 			ID:          cmd.ID,
 			Description: cmd.Description,
+		},
+	}
+
+	return c.eventStream.Write(events)
+}
+
+func (c *cmdHandler) handleCmdTaskUpdateDescription(cmd *CmdTaskUpdateDescription) error {
+	taskProjection := &taskDomainProjection{}
+
+	aggregateEvents, err := c.eventStream.ReadAggregate(cmd.ID)
+	if err != nil {
+		return nil
+	}
+
+	if len(aggregateEvents) == 0 {
+		return nil
+	}
+
+	for _, evt := range aggregateEvents {
+		taskProjection.apply(evt)
+	}
+
+	events := []eventstream.Event{
+		&EvtTaskDescriptionUpdated{
+			ID:          cmd.ID,
+			Description: cmd.NewDescription,
 		},
 	}
 
