@@ -153,6 +153,21 @@ func (m *taskDomainModel) complete() []eventstream.Event {
 	return events
 }
 
+func (m *taskDomainModel) create(ID string, description string) []eventstream.Event {
+	events := make([]eventstream.Event, 0)
+
+	if m.id == "" {
+		events = []eventstream.Event{
+			&EvtTaskCreated{
+				ID:          ID,
+				Description: description,
+			},
+		}
+	}
+
+	return events
+}
+
 //// COMMAND HANDLER
 
 type cmdHandler struct {
@@ -173,28 +188,12 @@ func (c *cmdHandler) Handle(cmd interface{}) error {
 }
 
 func (c *cmdHandler) handleCmdTaskCreate(cmd *CmdTaskCreate) error {
-	domainModel := &taskDomainModel{}
-
-	aggregateEvents, err := c.eventStream.ReadAggregate(cmd.ID)
+	domainModel, err := c.loadDomainModel(cmd.ID)
 	if err != nil {
 		return nil
 	}
 
-	for _, evt := range aggregateEvents {
-		domainModel.apply(evt)
-	}
-
-	if len(aggregateEvents) > 0 {
-		return nil
-	}
-
-	events := []eventstream.Event{
-		&EvtTaskCreated{
-			ID:          cmd.ID,
-			Description: cmd.Description,
-		},
-	}
-
+	events := domainModel.create(cmd.ID, cmd.Description)
 	return c.eventStream.Write(events)
 }
 
