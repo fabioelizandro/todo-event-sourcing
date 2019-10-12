@@ -4,7 +4,7 @@ package eventstream
 type EventStream interface {
 
 	// ReadAggregate read all events from a specific aggregate id
-	ReadAggregate(aggregateID string, eventHandler eventHandler) error
+	ReadAggregate(aggregateID string) ([]*EventEnvelope, error)
 
 	// Write add events to the stream and ideally it would ensure uniqueness of AggregateID,AggregateType,AggregateVersion
 	Write(events []*EventEnvelope) error
@@ -16,29 +16,23 @@ type EventEnvelope struct {
 	AggregateID      string
 	AggregateType    string
 	AggregateVersion int64
-	Event            Event
+	Event            []byte
 }
-
-type Event interface {
-	Payload() ([]byte, error)
-}
-
-// eventHandler is a func to handle events when reading from the event stream
-type eventHandler = func(event *EventEnvelope)
 
 // InMemoryEventStream the in memory implementation of EventStream interface, use for test only purposes
 type InMemoryEventStream struct {
 	events []*EventEnvelope
 }
 
-func (stream *InMemoryEventStream) ReadAggregate(aggregateID string, handler eventHandler) error {
+func (stream *InMemoryEventStream) ReadAggregate(aggregateID string) ([]*EventEnvelope, error) {
+	aggregateEvents := make([]*EventEnvelope, 0)
 	for _, event := range stream.events {
 		if event.AggregateID == aggregateID {
-			handler(event)
+			aggregateEvents = append(aggregateEvents, event)
 		}
 	}
 
-	return nil
+	return aggregateEvents, nil
 }
 
 func (stream *InMemoryEventStream) Write(events []*EventEnvelope) error {
