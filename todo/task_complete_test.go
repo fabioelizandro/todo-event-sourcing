@@ -24,6 +24,7 @@ func Test_task_complete(t *testing.T) {
 	}
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
 }
+
 func Test_task_complete_already_completed(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &todo.CmdTaskComplete{ID: uuid.New().String()}
