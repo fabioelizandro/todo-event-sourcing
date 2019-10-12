@@ -86,23 +86,40 @@ func (e *EvtTaskCompleted) Payload() ([]byte, error) {
 	return json.Marshal(e)
 }
 
-//// Projections
+//// Domain model projection
 
-type taskDomainProjection struct {
+type taskDomainModel struct {
 	id          string
 	description string
 }
 
-func (m *taskDomainProjection) apply(evt eventstream.Event) {
+func (m *taskDomainModel) apply(evt eventstream.Event) {
 	switch v := evt.(type) {
 	case *EvtTaskCreated:
 		m.applyTaskCreated(v)
 	}
 }
 
-func (m *taskDomainProjection) applyTaskCreated(evt *EvtTaskCreated) {
+func (m *taskDomainModel) applyTaskCreated(evt *EvtTaskCreated) {
 	m.id = evt.ID
 	m.description = evt.Description
+}
+
+func (m *taskDomainModel) updateDescription(newDescription string) []eventstream.Event {
+	events := make([]eventstream.Event, 0)
+
+	if m.id == "" {
+		return nil
+	}
+
+	if m.description != newDescription {
+		events = append(events, &EvtTaskDescriptionUpdated{
+			ID:          m.id,
+			Description: newDescription,
+		})
+	}
+
+	return events
 }
 
 //// COMMAND HANDLER
@@ -125,19 +142,19 @@ func (c *cmdHandler) Handle(cmd interface{}) error {
 }
 
 func (c *cmdHandler) handleCmdTaskCreate(cmd *CmdTaskCreate) error {
-	taskProjection := &taskDomainProjection{}
+	domainModel := &taskDomainModel{}
 
 	aggregateEvents, err := c.eventStream.ReadAggregate(cmd.ID)
 	if err != nil {
 		return nil
 	}
 
-	if len(aggregateEvents) > 0 {
-		return nil
+	for _, evt := range aggregateEvents {
+		domainModel.apply(evt)
 	}
 
-	for _, evt := range aggregateEvents {
-		taskProjection.apply(evt)
+	if len(aggregateEvents) > 0 {
+		return nil
 	}
 
 	events := []eventstream.Event{
@@ -151,33 +168,17 @@ func (c *cmdHandler) handleCmdTaskCreate(cmd *CmdTaskCreate) error {
 }
 
 func (c *cmdHandler) handleCmdTaskUpdateDescription(cmd *CmdTaskUpdateDescription) error {
-	taskProjection := &taskDomainProjection{}
-
-	aggregateEvents, err := c.eventStream.ReadAggregate(cmd.ID)
+	domainModel, err := c.loadDomainModel(cmd)
 	if err != nil {
-		return nil
+		return err
 	}
 
-	if len(aggregateEvents) == 0 {
-		return nil
-	}
-
-	for _, evt := range aggregateEvents {
-		taskProjection.apply(evt)
-	}
-
-	events := []eventstream.Event{
-		&EvtTaskDescriptionUpdated{
-			ID:          cmd.ID,
-			Description: cmd.NewDescription,
-		},
-	}
-
+	events := domainModel.updateDescription(cmd.NewDescription)
 	return c.eventStream.Write(events)
 }
 
 func (c *cmdHandler) handleCmdTaskComplete(cmd *CmdTaskComplete) error {
-	taskProjection := &taskDomainProjection{}
+	domainModel := &taskDomainModel{}
 
 	aggregateEvents, err := c.eventStream.ReadAggregate(cmd.ID)
 	if err != nil {
@@ -189,7 +190,7 @@ func (c *cmdHandler) handleCmdTaskComplete(cmd *CmdTaskComplete) error {
 	}
 
 	for _, evt := range aggregateEvents {
-		taskProjection.apply(evt)
+		domainModel.apply(evt)
 	}
 
 	events := []eventstream.Event{
@@ -197,6 +198,20 @@ func (c *cmdHandler) handleCmdTaskComplete(cmd *CmdTaskComplete) error {
 	}
 
 	return c.eventStream.Write(events)
+}
+
+func (c *cmdHandler) loadDomainModel(cmd *CmdTaskUpdateDescription) (*taskDomainModel, error) {
+	domainModel := &taskDomainModel{}
+	aggregateEvents, err := c.eventStream.ReadAggregate(cmd.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, evt := range aggregateEvents {
+		domainModel.apply(evt)
+	}
+
+	return domainModel, nil
 }
 
 func NewCmdHandler(eventStream eventstream.EventStream) *cmdHandler {
