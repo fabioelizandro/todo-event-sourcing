@@ -7,26 +7,28 @@ type EventStream interface {
 	ReadAggregate(aggregateID string, eventHandler eventHandler) error
 
 	// Write add events to the stream and ideally it would ensure uniqueness of AggregateID,AggregateType,AggregateVersion
-	Write(events *[]Event) error
+	Write(events []*EventEnvelope) error
 }
 
-// Event that's how a event looks like when we see it through the stream lens
-type Event struct {
-	ID string
-	Type string
-	AggregateID string
-	AggregateType string
+// EventEnvelope that's how a event looks like when we see it through the stream lens
+type EventEnvelope struct {
+	Type             string
+	AggregateID      string
+	AggregateType    string
 	AggregateVersion int64
-	Payload string
+	Event            Event
+}
+
+type Event interface {
+	Payload() ([]byte, error)
 }
 
 // eventHandler is a func to handle events when reading from the event stream
-type eventHandler = func (event Event)
-
+type eventHandler = func(event *EventEnvelope)
 
 // InMemoryEventStream the in memory implementation of EventStream interface, use for test only purposes
 type InMemoryEventStream struct {
-	events []Event
+	events []*EventEnvelope
 }
 
 func (stream *InMemoryEventStream) ReadAggregate(aggregateID string, handler eventHandler) error {
@@ -39,13 +41,13 @@ func (stream *InMemoryEventStream) ReadAggregate(aggregateID string, handler eve
 	return nil
 }
 
-func (stream *InMemoryEventStream) Write(events *[]Event) error {
-	// TODO: ensure uniqueness of events
-	stream.events = append(stream.events, *events...)
+func (stream *InMemoryEventStream) Write(events []*EventEnvelope) error {
+	// TODO: ensure uniqueness of events (aggregateID + aggregateVersion)
+	stream.events = append(stream.events, events...)
 	return nil
 }
 
-func (stream *InMemoryEventStream) InMemoryReadAll() []Event {
+func (stream *InMemoryEventStream) InMemoryReadAll() []*EventEnvelope {
 	return stream.events
 }
 
