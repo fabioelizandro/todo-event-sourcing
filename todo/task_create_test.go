@@ -1,7 +1,6 @@
 package todo_test
 
 import (
-	"encoding/json"
 	"fabioelizandro/todo-event-sourcing/eventstream"
 	"fabioelizandro/todo-event-sourcing/todo"
 	"testing"
@@ -17,19 +16,10 @@ func Test_task_created(t *testing.T) {
 
 	assert.Nil(t, cmdHandler.Handle(cmd))
 
-	event, err := json.Marshal(&todo.EvtTaskCreated{
-		ID:          cmd.ID,
-		Description: cmd.Description,
-	})
-	assert.Nil(t, err)
-
-	expectedEvents := []*eventstream.EventEnvelope{
-		{
-			Type:             "TASK_CREATED",
-			AggregateID:      cmd.ID,
-			AggregateType:    "TASK",
-			AggregateVersion: 1,
-			Event:            event,
+	expectedEvents := []eventstream.Event{
+		&todo.EvtTaskCreated{
+			ID:          cmd.ID,
+			Description: cmd.Description,
 		},
 	}
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
@@ -43,19 +33,10 @@ func Test_task_create_duplicated(t *testing.T) {
 	assert.Nil(t, cmdHandler.Handle(cmd))
 	assert.Nil(t, cmdHandler.Handle(cmd))
 
-	event, err := json.Marshal(&todo.EvtTaskCreated{
-		ID:          cmd.ID,
-		Description: cmd.Description,
-	})
-	assert.Nil(t, err)
-
-	expectedEvents := []*eventstream.EventEnvelope{
-		{
-			Type:             "TASK_CREATED",
-			AggregateID:      cmd.ID,
-			AggregateType:    "TASK",
-			AggregateVersion: 1,
-			Event:            event,
+	expectedEvents := []eventstream.Event{
+		&todo.EvtTaskCreated{
+			ID:          cmd.ID,
+			Description: cmd.Description,
 		},
 	}
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())

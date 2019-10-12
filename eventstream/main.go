@@ -1,33 +1,26 @@
 package eventstream
 
-// EventStream event stream interface
 type EventStream interface {
-
-	// ReadAggregate read all events from a specific aggregate id
-	ReadAggregate(aggregateID string) ([]*EventEnvelope, error)
-
-	// Write add events to the stream and ideally it would ensure uniqueness of AggregateID,AggregateType,AggregateVersion
-	Write(events []*EventEnvelope) error
+	ReadAggregate(aggregateID string) ([]Event, error)
+	Write(events []Event) error
 }
 
-// EventEnvelope that's how a event looks like when we see it through the stream lens
-type EventEnvelope struct {
-	Type             string
-	AggregateID      string
-	AggregateType    string
-	AggregateVersion int64
-	Event            []byte
+type Event interface {
+	Type() string
+	AggregateID() string
+	AggregateType() string
+	AggregateVersion() int64
+	Payload() ([]byte, error)
 }
 
-// InMemoryEventStream the in memory implementation of EventStream interface, use for test only purposes
 type InMemoryEventStream struct {
-	events []*EventEnvelope
+	events []Event
 }
 
-func (stream *InMemoryEventStream) ReadAggregate(aggregateID string) ([]*EventEnvelope, error) {
-	aggregateEvents := make([]*EventEnvelope, 0)
+func (stream *InMemoryEventStream) ReadAggregate(aggregateID string) ([]Event, error) {
+	aggregateEvents := make([]Event, 0)
 	for _, event := range stream.events {
-		if event.AggregateID == aggregateID {
+		if event.AggregateID() == aggregateID {
 			aggregateEvents = append(aggregateEvents, event)
 		}
 	}
@@ -35,13 +28,12 @@ func (stream *InMemoryEventStream) ReadAggregate(aggregateID string) ([]*EventEn
 	return aggregateEvents, nil
 }
 
-func (stream *InMemoryEventStream) Write(events []*EventEnvelope) error {
-	// TODO: ensure uniqueness of events (aggregateID + aggregateVersion)
+func (stream *InMemoryEventStream) Write(events []Event) error {
 	stream.events = append(stream.events, events...)
 	return nil
 }
 
-func (stream *InMemoryEventStream) InMemoryReadAll() []*EventEnvelope {
+func (stream *InMemoryEventStream) InMemoryReadAll() []Event {
 	return stream.events
 }
 

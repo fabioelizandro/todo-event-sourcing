@@ -7,7 +7,6 @@ import (
 
 //// COMMANDS
 
-// CmdTaskCreate add task command
 type CmdTaskCreate struct {
 	ID          string
 	Description string
@@ -15,32 +14,43 @@ type CmdTaskCreate struct {
 
 //// EVENTS
 
-// EvtTaskCreated task created event
 type EvtTaskCreated struct {
 	ID          string
 	Description string
 }
 
+func (e *EvtTaskCreated) Type() string {
+	return "TASK_CREATED"
+}
+
+func (e *EvtTaskCreated) AggregateID() string {
+	return e.ID
+}
+
+func (e *EvtTaskCreated) AggregateType() string {
+	return "TASK"
+}
+
+func (e *EvtTaskCreated) AggregateVersion() int64 {
+	return 1
+}
+
+func (e *EvtTaskCreated) Payload() ([]byte, error) {
+	return json.Marshal(e)
+}
+
 //// Projections
 
-//// Domain Projection
 type taskDomainProjection struct {
 	id          string
 	description string
 }
 
-func (m *taskDomainProjection) apply(eventEnvelope *eventstream.EventEnvelope) error {
-	switch eventEnvelope.Type {
-	case "TASK_CREATED":
-		evt := &EvtTaskCreated{}
-		err := json.Unmarshal(eventEnvelope.Event, evt)
-		if err != nil {
-			return nil
-		}
-		m.applyTaskCreated(evt)
+func (m *taskDomainProjection) apply(evt eventstream.Event) {
+	switch v := evt.(type) {
+	case *EvtTaskCreated:
+		m.applyTaskCreated(v)
 	}
-
-	return nil
 }
 
 func (m *taskDomainProjection) applyTaskCreated(evt *EvtTaskCreated) {
@@ -50,12 +60,10 @@ func (m *taskDomainProjection) applyTaskCreated(evt *EvtTaskCreated) {
 
 //// COMMAND HANDLER
 
-// cmdHandler execute commands to model
 type cmdHandler struct {
 	eventStream eventstream.EventStream
 }
 
-// Handle handles any task Cmd*
 func (c *cmdHandler) Handle(cmd interface{}) error {
 	switch v := cmd.(type) {
 	case *CmdTaskCreate:
@@ -78,35 +86,19 @@ func (c *cmdHandler) handleCmdTaskCreate(cmd *CmdTaskCreate) error {
 	}
 
 	for _, evt := range aggregateEvents {
-		err := taskProjection.apply(evt)
-		if err != nil {
-			return err
-		}
+		taskProjection.apply(evt)
 	}
 
-	event, err := json.Marshal(&EvtTaskCreated{
-		ID:          cmd.ID,
-		Description: cmd.Description,
-	})
-
-	if err != nil {
-		return nil
-	}
-
-	events := []*eventstream.EventEnvelope{
-		{
-			Type:             "TASK_CREATED",
-			AggregateID:      cmd.ID,
-			AggregateType:    "TASK",
-			AggregateVersion: 1,
-			Event:            event,
+	events := []eventstream.Event{
+		&EvtTaskCreated{
+			ID:          cmd.ID,
+			Description: cmd.Description,
 		},
 	}
 
 	return c.eventStream.Write(events)
 }
 
-// NewCmdHandler func factory of cmdHandler
 func NewCmdHandler(eventStream eventstream.EventStream) *cmdHandler {
 	return &cmdHandler{eventStream: eventStream}
 }
