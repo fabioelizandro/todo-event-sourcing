@@ -1,4 +1,4 @@
-package todo
+package task
 
 type CmdTaskCreate struct {
 	ID          string

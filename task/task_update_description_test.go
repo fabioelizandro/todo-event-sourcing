@@ -1,8 +1,8 @@
-package todo_test
+package task_test
 
 import (
 	"fabioelizandro/todo-event-sourcing/eventstream"
-	"fabioelizandro/todo-event-sourcing/todo"
+	"fabioelizandro/todo-event-sourcing/task"
 	"testing"
 
 	"github.com/google/uuid"
@@ -11,16 +11,16 @@ import (
 
 func Test_task_update_description(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
-	cmd := &todo.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
-	createdEvent := &todo.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
+	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
+	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
 	assert.Nil(t, eventStream.Write([]eventstream.Event{createdEvent}))
 
-	cmdHandler := todo.NewCmdHandler(eventStream)
+	cmdHandler := task.NewCmdHandler(eventStream)
 	assert.Nil(t, cmdHandler.Handle(cmd))
 
 	expectedEvents := []eventstream.Event{
 		createdEvent,
-		&todo.EvtTaskDescriptionUpdated{
+		&task.EvtTaskDescriptionUpdated{
 			ID:          cmd.ID,
 			Description: cmd.NewDescription,
 		},
@@ -30,17 +30,17 @@ func Test_task_update_description(t *testing.T) {
 
 func Test_task_update_description_to_same(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
-	cmd := &todo.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
-	createdEvent := &todo.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
+	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
+	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
 	assert.Nil(t, eventStream.Write([]eventstream.Event{createdEvent}))
 
-	cmdHandler := todo.NewCmdHandler(eventStream)
+	cmdHandler := task.NewCmdHandler(eventStream)
 	assert.Nil(t, cmdHandler.Handle(cmd))
 	assert.Nil(t, cmdHandler.Handle(cmd))
 
 	expectedEvents := []eventstream.Event{
 		createdEvent,
-		&todo.EvtTaskDescriptionUpdated{
+		&task.EvtTaskDescriptionUpdated{
 			ID:          cmd.ID,
 			Description: cmd.NewDescription,
 		},
@@ -50,9 +50,9 @@ func Test_task_update_description_to_same(t *testing.T) {
 
 func Test_task_update_description_not_found(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
-	cmd := &todo.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
+	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 
-	cmdHandler := todo.NewCmdHandler(eventStream)
+	cmdHandler := task.NewCmdHandler(eventStream)
 	assert.Nil(t, cmdHandler.Handle(cmd))
 
 	assert.Equal(t, 0, len(eventStream.InMemoryReadAll()))

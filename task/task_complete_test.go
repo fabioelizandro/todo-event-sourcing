@@ -1,8 +1,8 @@
-package todo_test
+package task_test
 
 import (
 	"fabioelizandro/todo-event-sourcing/eventstream"
-	"fabioelizandro/todo-event-sourcing/todo"
+	"fabioelizandro/todo-event-sourcing/task"
 	"testing"
 
 	"github.com/google/uuid"
@@ -11,42 +11,42 @@ import (
 
 func Test_task_complete(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
-	cmd := &todo.CmdTaskComplete{ID: uuid.New().String()}
-	createdEvent := &todo.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
+	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
+	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
 	assert.Nil(t, eventStream.Write([]eventstream.Event{createdEvent}))
 
-	cmdHandler := todo.NewCmdHandler(eventStream)
+	cmdHandler := task.NewCmdHandler(eventStream)
 	assert.Nil(t, cmdHandler.Handle(cmd))
 
 	expectedEvents := []eventstream.Event{
 		createdEvent,
-		&todo.EvtTaskCompleted{ID: cmd.ID},
+		&task.EvtTaskCompleted{ID: cmd.ID},
 	}
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
 }
 
 func Test_task_complete_already_completed(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
-	cmd := &todo.CmdTaskComplete{ID: uuid.New().String()}
-	createdEvent := &todo.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
+	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
+	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
 	assert.Nil(t, eventStream.Write([]eventstream.Event{createdEvent}))
 
-	cmdHandler := todo.NewCmdHandler(eventStream)
+	cmdHandler := task.NewCmdHandler(eventStream)
 	assert.Nil(t, cmdHandler.Handle(cmd))
 	assert.Nil(t, cmdHandler.Handle(cmd))
 
 	expectedEvents := []eventstream.Event{
 		createdEvent,
-		&todo.EvtTaskCompleted{ID: cmd.ID},
+		&task.EvtTaskCompleted{ID: cmd.ID},
 	}
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
 }
 
 func Test_task_complete_not_found(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
-	cmd := &todo.CmdTaskComplete{ID: uuid.New().String()}
+	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
 
-	cmdHandler := todo.NewCmdHandler(eventStream)
+	cmdHandler := task.NewCmdHandler(eventStream)
 	assert.Nil(t, cmdHandler.Handle(cmd))
 
 	assert.Equal(t, 0, len(eventStream.InMemoryReadAll()))

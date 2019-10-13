@@ -1,8 +1,8 @@
-package todo_test
+package task_test
 
 import (
 	"fabioelizandro/todo-event-sourcing/eventstream"
-	"fabioelizandro/todo-event-sourcing/todo"
+	"fabioelizandro/todo-event-sourcing/task"
 	"testing"
 
 	"github.com/google/uuid"
@@ -11,13 +11,13 @@ import (
 
 func Test_task_created(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
-	cmd := &todo.CmdTaskCreate{ID: uuid.New().String(), Description: "Do the dishes"}
-	cmdHandler := todo.NewCmdHandler(eventStream)
+	cmd := &task.CmdTaskCreate{ID: uuid.New().String(), Description: "Do the dishes"}
+	cmdHandler := task.NewCmdHandler(eventStream)
 
 	assert.Nil(t, cmdHandler.Handle(cmd))
 
 	expectedEvents := []eventstream.Event{
-		&todo.EvtTaskCreated{
+		&task.EvtTaskCreated{
 			ID:          cmd.ID,
 			Description: cmd.Description,
 		},
@@ -27,14 +27,14 @@ func Test_task_created(t *testing.T) {
 
 func Test_task_create_duplicated(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
-	cmd := &todo.CmdTaskCreate{ID: uuid.New().String(), Description: "Do the dishes"}
-	cmdHandler := todo.NewCmdHandler(eventStream)
+	cmd := &task.CmdTaskCreate{ID: uuid.New().String(), Description: "Do the dishes"}
+	cmdHandler := task.NewCmdHandler(eventStream)
 
 	assert.Nil(t, cmdHandler.Handle(cmd))
 	assert.Nil(t, cmdHandler.Handle(cmd))
 
 	expectedEvents := []eventstream.Event{
-		&todo.EvtTaskCreated{
+		&task.EvtTaskCreated{
 			ID:          cmd.ID,
 			Description: cmd.Description,
 		},

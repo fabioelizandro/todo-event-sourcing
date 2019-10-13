@@ -1,4 +1,4 @@
-package todo
+package task
 
 import "fabioelizandro/todo-event-sourcing/eventstream"
 
