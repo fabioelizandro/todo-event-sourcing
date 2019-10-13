@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_task_complete(t *testing.T) {
+func Test_it_marks_task_as_completed(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
@@ -25,7 +25,7 @@ func Test_task_complete(t *testing.T) {
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
 }
 
-func Test_task_complete_already_completed(t *testing.T) {
+func Test_it_ignores_complete_cmd_when_is_complete_already(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
@@ -42,7 +42,7 @@ func Test_task_complete_already_completed(t *testing.T) {
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
 }
 
-func Test_task_complete_not_found(t *testing.T) {
+func Test_it_ignores_cmd_complete_for_not_found_tasks(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
 

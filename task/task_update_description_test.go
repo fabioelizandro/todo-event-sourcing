@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_task_update_description(t *testing.T) {
+func Test_it_updates_task_description(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
@@ -28,7 +28,7 @@ func Test_task_update_description(t *testing.T) {
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
 }
 
-func Test_task_update_description_to_same(t *testing.T) {
+func Test_it_ignores_cmd_when_new_description_is_equal_to_current(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
@@ -48,7 +48,7 @@ func Test_task_update_description_to_same(t *testing.T) {
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
 }
 
-func Test_task_update_description_not_found(t *testing.T) {
+func Test_it_ignores_cmd_when_task_is_not_found(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 

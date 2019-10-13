@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_task_created(t *testing.T) {
+func Test_it_create_tasks(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskCreate{
 		ID:          uuid.New().String(),
@@ -31,7 +31,7 @@ func Test_task_created(t *testing.T) {
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
 }
 
-func Test_task_create_duplicated(t *testing.T) {
+func Test_it_does_not_create_tasks_with_same_id(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskCreate{ID: uuid.New().String(), Description: "Do the dishes"}
 	cmdHandler := task.NewCmdHandler(eventStream)

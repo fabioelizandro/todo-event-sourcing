@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_task_list(t *testing.T) {
+func Test_it_lists_all_created_tasks(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	assert.Nil(t, eventStream.Write([]eventstream.Event{
 		&task.EvtTaskCreated{ID: "123", Description: "Do the dishes", CreatedAt: 0},
@@ -35,7 +35,7 @@ func Test_task_list(t *testing.T) {
 	assert.Equal(t, expectedTasks, listProjection.Tasks())
 }
 
-func Test_task_list_updated(t *testing.T) {
+func Test_it_updates_task_descriptions(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	assert.Nil(t, eventStream.Write([]eventstream.Event{
 		&task.EvtTaskCreated{ID: "123", Description: "Do the dishes"},
@@ -56,7 +56,7 @@ func Test_task_list_updated(t *testing.T) {
 	assert.Equal(t, expectedTasks, listProjection.Tasks())
 }
 
-func Test_task_list_completed(t *testing.T) {
+func Test_it_marks_task_as_completed(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	assert.Nil(t, eventStream.Write([]eventstream.Event{
 		&task.EvtTaskCreated{ID: "123", Description: "Do the dishes", Completed: false},
@@ -77,7 +77,7 @@ func Test_task_list_completed(t *testing.T) {
 	assert.Equal(t, expectedTasks, listProjection.Tasks())
 }
 
-func Test_task_show(t *testing.T) {
+func Test_it_shows_task_by_id(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	assert.Nil(t, eventStream.Write([]eventstream.Event{
 		&task.EvtTaskCreated{ID: "123", Description: "Do the dishes", Completed: false},
@@ -95,7 +95,7 @@ func Test_task_show(t *testing.T) {
 	assert.Equal(t, expectedTask, listProjection.Task("123"))
 }
 
-func Test_task_show_not_found(t *testing.T) {
+func Test_it_returns_nil_when_task_not_found(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	listProjection := taskprojections.NewTaskListProjection(eventStream)
 	assert.Nil(t, listProjection.Task("123"))
