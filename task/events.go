@@ -47,8 +47,7 @@ func (e *EvtTaskDescriptionUpdated) Payload() ([]byte, error) {
 }
 
 type EvtTaskCompleted struct {
-	ID          string
-	Description string
+	ID string
 }
 
 func (e *EvtTaskCompleted) Type() string {

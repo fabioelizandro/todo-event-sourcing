@@ -1,6 +1,7 @@
 package eventstream
 
 type EventStream interface {
+	Read(eventID uint64) (Event, error)
 	ReadAggregate(aggregateID string) ([]Event, error)
 	Write(events []Event) error
 }
@@ -14,6 +15,20 @@ type Event interface {
 
 type InMemoryEventStream struct {
 	events []Event
+}
+
+func (stream *InMemoryEventStream) Read(eventID uint64) (Event, error) {
+	count := uint64(len(stream.events))
+
+	if count == 0 {
+		return nil, nil
+	}
+
+	if eventID+1 > count {
+		return nil, nil
+	}
+
+	return stream.events[eventID], nil
 }
 
 func (stream *InMemoryEventStream) ReadAggregate(aggregateID string) ([]Event, error) {
