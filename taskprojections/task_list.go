@@ -4,6 +4,7 @@ import (
 	"fabioelizandro/todo-event-sourcing/eventstream"
 	"fabioelizandro/todo-event-sourcing/task"
 	"sort"
+	"time"
 )
 
 type Task struct {
@@ -59,6 +60,20 @@ func (t *taskListProjection) CatchupEventStream() error {
 
 		t.apply(evt)
 		t.eventID++
+	}
+}
+
+func (t *taskListProjection) PollEventStream(intervalMilliseconds int) error {
+	for {
+		evt, err := t.es.Read(t.eventID)
+		if err != nil {
+			return err
+		}
+
+		t.apply(evt)
+		t.eventID++
+
+		time.Sleep(time.Duration(intervalMilliseconds) * time.Millisecond)
 	}
 }
 
