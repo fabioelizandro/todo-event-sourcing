@@ -1,4 +1,4 @@
-package taskprojections
+package taskprojection
 
 import (
 	"fabioelizandro/todo-event-sourcing/eventstream"
@@ -14,13 +14,13 @@ type Task struct {
 	CreatedAt   int64
 }
 
-type taskListProjection struct {
+type taskProjection struct {
 	es      eventstream.EventStream
 	eventID uint64
 	tasks   map[string]*Task
 }
 
-func (t *taskListProjection) apply(evt eventstream.Event) {
+func (t *taskProjection) apply(evt eventstream.Event) {
 	switch v := evt.(type) {
 	case *task.EvtTaskCreated:
 		t.applyTaskCreated(v)
@@ -31,7 +31,7 @@ func (t *taskListProjection) apply(evt eventstream.Event) {
 	}
 }
 
-func (t *taskListProjection) applyTaskCreated(evt *task.EvtTaskCreated) {
+func (t *taskProjection) applyTaskCreated(evt *task.EvtTaskCreated) {
 	t.tasks[evt.ID] = &Task{
 		ID:          evt.ID,
 		Description: evt.Description,
@@ -39,15 +39,15 @@ func (t *taskListProjection) applyTaskCreated(evt *task.EvtTaskCreated) {
 	}
 }
 
-func (t *taskListProjection) applyTaskDescriptionUpdated(evt *task.EvtTaskDescriptionUpdated) {
+func (t *taskProjection) applyTaskDescriptionUpdated(evt *task.EvtTaskDescriptionUpdated) {
 	t.tasks[evt.ID].Description = evt.Description
 }
 
-func (t *taskListProjection) applyTaskCompleted(evt *task.EvtTaskCompleted) {
+func (t *taskProjection) applyTaskCompleted(evt *task.EvtTaskCompleted) {
 	t.tasks[evt.ID].Completed = true
 }
 
-func (t *taskListProjection) CatchupEventStream() error {
+func (t *taskProjection) CatchupEventStream() error {
 	for {
 		evt, err := t.es.Read(t.eventID)
 		if err != nil {
@@ -63,7 +63,7 @@ func (t *taskListProjection) CatchupEventStream() error {
 	}
 }
 
-func (t *taskListProjection) PollEventStream(intervalMilliseconds int) error {
+func (t *taskProjection) PollEventStream(intervalMilliseconds int) error {
 	for {
 		evt, err := t.es.Read(t.eventID)
 		if err != nil {
@@ -77,7 +77,7 @@ func (t *taskListProjection) PollEventStream(intervalMilliseconds int) error {
 	}
 }
 
-func (t *taskListProjection) Tasks() []*Task {
+func (t *taskProjection) Tasks() []*Task {
 	tasks := make([]*Task, 0)
 
 	for _, v := range t.tasks {
@@ -91,12 +91,11 @@ func (t *taskListProjection) Tasks() []*Task {
 	return tasks
 }
 
-func (t *taskListProjection) Task(ID string) *Task {
+func (t *taskProjection) Task(ID string) *Task {
 	return t.tasks[ID]
 }
 
-func NewTaskListProjection(es eventstream.EventStream) *taskListProjection {
-	projection := &taskListProjection{es: es}
-	projection.tasks = make(map[string]*Task, 0)
+func NewTaskProjection(es eventstream.EventStream) *taskProjection {
+	projection := &taskProjection{es: es, tasks: make(map[string]*Task, 0)}
 	return projection
 }
