@@ -2,14 +2,14 @@ package eventstream
 
 type EventStream interface {
 	Read(eventID uint64) (Event, error)
-	ReadAggregate(aggregateID string) ([]Event, error)
+	ReadByCorrelationID(correlationID string) ([]Event, error)
 	Write(events []Event) error
 }
 
 type Event interface {
 	Type() string
-	AggregateID() string
-	AggregateType() string
+	CorrelationID() string
+	Category() string
 	Payload() ([]byte, error)
 }
 
@@ -31,15 +31,15 @@ func (stream *InMemoryEventStream) Read(eventID uint64) (Event, error) {
 	return stream.events[eventID], nil
 }
 
-func (stream *InMemoryEventStream) ReadAggregate(aggregateID string) ([]Event, error) {
-	aggregateEvents := make([]Event, 0)
+func (stream *InMemoryEventStream) ReadByCorrelationID(correlationID string) ([]Event, error) {
+	correlatedEvents := make([]Event, 0)
 	for _, event := range stream.events {
-		if event.AggregateID() == aggregateID {
-			aggregateEvents = append(aggregateEvents, event)
+		if event.CorrelationID() == correlationID {
+			correlatedEvents = append(correlatedEvents, event)
 		}
 	}
 
-	return aggregateEvents, nil
+	return correlatedEvents, nil
 }
 
 func (stream *InMemoryEventStream) Write(events []Event) error {

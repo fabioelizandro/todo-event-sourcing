@@ -13,11 +13,11 @@ func (e *EvtTaskCreated) Type() string {
 	return "TASK_CREATED"
 }
 
-func (e *EvtTaskCreated) AggregateID() string {
+func (e *EvtTaskCreated) CorrelationID() string {
 	return e.ID
 }
 
-func (e *EvtTaskCreated) AggregateType() string {
+func (e *EvtTaskCreated) Category() string {
 	return "TASK"
 }
 
@@ -34,11 +34,11 @@ func (e *EvtTaskDescriptionUpdated) Type() string {
 	return "TASK_DESCRIPTION_UPDATED"
 }
 
-func (e *EvtTaskDescriptionUpdated) AggregateID() string {
+func (e *EvtTaskDescriptionUpdated) CorrelationID() string {
 	return e.ID
 }
 
-func (e *EvtTaskDescriptionUpdated) AggregateType() string {
+func (e *EvtTaskDescriptionUpdated) Category() string {
 	return "TASK"
 }
 
@@ -54,11 +54,11 @@ func (e *EvtTaskCompleted) Type() string {
 	return "TASK_COMPLETED"
 }
 
-func (e *EvtTaskCompleted) AggregateID() string {
+func (e *EvtTaskCompleted) CorrelationID() string {
 	return e.ID
 }
 
-func (e *EvtTaskCompleted) AggregateType() string {
+func (e *EvtTaskCompleted) Category() string {
 	return "TASK"
 }
 
