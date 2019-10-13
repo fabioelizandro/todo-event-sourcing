@@ -4,6 +4,7 @@ import (
 	"fabioelizandro/todo-event-sourcing/eventstream"
 	"fabioelizandro/todo-event-sourcing/task"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -11,7 +12,11 @@ import (
 
 func Test_task_created(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
-	cmd := &task.CmdTaskCreate{ID: uuid.New().String(), Description: "Do the dishes"}
+	cmd := &task.CmdTaskCreate{
+		ID:          uuid.New().String(),
+		Description: "Do the dishes",
+		CreatedAt:   time.Now().UnixNano(),
+	}
 	cmdHandler := task.NewCmdHandler(eventStream)
 
 	assert.Nil(t, cmdHandler.Handle(cmd))
@@ -20,6 +25,7 @@ func Test_task_created(t *testing.T) {
 		&task.EvtTaskCreated{
 			ID:          cmd.ID,
 			Description: cmd.Description,
+			CreatedAt:   cmd.CreatedAt,
 		},
 	}
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())

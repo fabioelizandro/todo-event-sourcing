@@ -31,7 +31,7 @@ func (c *cmdHandler) handleCmdTaskCreate(cmd *CmdTaskCreate) error {
 		return nil
 	}
 
-	events := domainModel.create(cmd.ID, cmd.Description)
+	events := domainModel.create(cmd.ID, cmd.Description, cmd.CreatedAt)
 	return c.eventStream.Write(events)
 }
 

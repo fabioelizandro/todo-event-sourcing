@@ -66,7 +66,7 @@ func (m *taskDomainModel) complete() []eventstream.Event {
 	return events
 }
 
-func (m *taskDomainModel) create(ID string, description string) []eventstream.Event {
+func (m *taskDomainModel) create(ID string, description string, createdAt int64) []eventstream.Event {
 	events := make([]eventstream.Event, 0)
 
 	if m.id == "" {
@@ -74,6 +74,7 @@ func (m *taskDomainModel) create(ID string, description string) []eventstream.Ev
 			&EvtTaskCreated{
 				ID:          ID,
 				Description: description,
+				CreatedAt:   createdAt,
 			},
 		}
 	}

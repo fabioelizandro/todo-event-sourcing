@@ -6,6 +6,7 @@ type EvtTaskCreated struct {
 	ID          string
 	Description string
 	Completed   bool
+	CreatedAt   int64
 }
 
 func (e *EvtTaskCreated) Type() string {

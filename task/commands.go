@@ -3,6 +3,7 @@ package task
 type CmdTaskCreate struct {
 	ID          string
 	Description string
+	CreatedAt   int64
 }
 
 type CmdTaskUpdateDescription struct {
