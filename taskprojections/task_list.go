@@ -76,6 +76,10 @@ func (t *taskListProjection) Tasks() []*Task {
 	return tasks
 }
 
+func (t *taskListProjection) Task(ID string) *Task {
+	return t.tasks[ID]
+}
+
 func NewTaskListProjection(es eventstream.EventStream) *taskListProjection {
 	projection := &taskListProjection{es: es}
 	projection.tasks = make(map[string]*Task, 0)

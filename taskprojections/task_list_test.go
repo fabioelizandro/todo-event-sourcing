@@ -76,3 +76,27 @@ func Test_task_list_completed(t *testing.T) {
 
 	assert.Equal(t, expectedTasks, listProjection.Tasks())
 }
+
+func Test_task_show(t *testing.T) {
+	eventStream := eventstream.NewInMemoryEventStream()
+	assert.Nil(t, eventStream.Write([]eventstream.Event{
+		&task.EvtTaskCreated{ID: "123", Description: "Do the dishes", Completed: false},
+	}))
+
+	listProjection := taskprojections.NewTaskListProjection(eventStream)
+	assert.Nil(t, listProjection.CatchupEventStream())
+
+	expectedTask := &taskprojections.Task{
+		ID:          "123",
+		Description: "Do the dishes",
+		Completed:   false,
+	}
+
+	assert.Equal(t, expectedTask, listProjection.Task("123"))
+}
+
+func Test_task_show_not_found(t *testing.T) {
+	eventStream := eventstream.NewInMemoryEventStream()
+	listProjection := taskprojections.NewTaskListProjection(eventStream)
+	assert.Nil(t, listProjection.Task("123"))
+}
