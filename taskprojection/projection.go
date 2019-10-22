@@ -14,6 +14,11 @@ type Task struct {
 	CreatedAt   int64
 }
 
+type TaskProjection interface {
+	Tasks() []*Task
+	Task(ID string) *Task
+}
+
 type taskProjection struct {
 	es      eventstream.EventStream
 	eventID uint64
@@ -70,8 +75,10 @@ func (t *taskProjection) PollEventStream(intervalMilliseconds int) error {
 			return err
 		}
 
-		t.apply(evt)
-		t.eventID++
+		if evt != nil {
+			t.apply(evt)
+			t.eventID++
+		}
 
 		time.Sleep(time.Duration(intervalMilliseconds) * time.Millisecond)
 	}
