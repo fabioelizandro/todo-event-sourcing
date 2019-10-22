@@ -2,7 +2,12 @@ package task
 
 import (
 	"fabioelizandro/todo-event-sourcing/eventstream"
+	"fmt"
 )
+
+type CmdHandler interface {
+	Handle(cmd interface{}) error
+}
 
 type cmdHandler struct {
 	eventStream eventstream.EventStream
@@ -21,7 +26,7 @@ func (c *cmdHandler) Handle(cmd interface{}) error {
 	case *CmdTaskComplete:
 		return c.handleCmdTaskComplete(v)
 	default:
-		return nil
+		return fmt.Errorf("command not found %v", v)
 	}
 }
 
