@@ -3,7 +3,6 @@ package http_routes
 import (
 	"io/ioutil"
 	"net/http"
-	"strconv"
 )
 
 func StdHttpRouteAdapter(route Route) func(w http.ResponseWriter, r *http.Request) {
@@ -56,12 +55,15 @@ func stdRouteAdapterResponse(response Response, w http.ResponseWriter) error {
 		return err
 	}
 
-	status, err := strconv.Atoi(response.Headers()["status"])
+	for name, value := range response.Headers() {
+		w.Header().Add(name, value)
+	}
+
+	err = w.Header().Write(w)
 	if err != nil {
 		return err
 	}
 
-	w.WriteHeader(status)
 	_, err = w.Write(body)
 	if err != nil {
 		return err
