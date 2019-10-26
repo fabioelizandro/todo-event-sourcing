@@ -20,6 +20,7 @@ func main() {
 	routeAdapter := http_routes.NewStdHttpRouteAdapter(zlog)
 	routes := []http_routes.Route{
 		http_routes.NewTaskListRoute(projection),
+		http_routes.NewTaskShowRoute(projection),
 		http_routes.NewTaskCreateRoute(commandHandler),
 	}
 
