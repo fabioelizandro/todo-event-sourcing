@@ -70,7 +70,7 @@ func (s *stdHttpRouteAdapter) stdRouteAdapterRequest(r *http.Request) (Request, 
 		return nil, err
 	}
 
-	return newRequest(headers, requestBody), nil
+	return NewRequest(headers, requestBody), nil
 }
 
 func (s *stdHttpRouteAdapter) stdRouteAdapterResponse(response Response, w http.ResponseWriter) error {

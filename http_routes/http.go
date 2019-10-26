@@ -63,13 +63,26 @@ func (e *unknownRequestBody) FieldStr(field string, defaultValue string) string 
 	return defaultValue
 }
 
+type fakeRequestBody struct {
+	fields map[string]string
+}
+
+func (f *fakeRequestBody) FieldStr(name string, defaultValue string) string {
+	value := f.fields[name]
+	if value == "" {
+		return defaultValue
+	} else {
+		return value
+	}
+}
+
 type jsonRequestBody struct {
 	rawBody []byte
 	body    map[string]string
 }
 
-func (j *jsonRequestBody) FieldStr(field string, defaultValue string) string {
-	value := j.body[field]
+func (j *jsonRequestBody) FieldStr(name string, defaultValue string) string {
+	value := j.body[name]
 	if value == "" {
 		return defaultValue
 	} else {
@@ -104,7 +117,7 @@ func newJsonOkResponse(headers Headers) *jsonResponse {
 	return newJsonResponse(defaultHeaders, map[string]string{"message": "OK"})
 }
 
-func newRequest(headers Headers, body RequestBody) *request {
+func NewRequest(headers Headers, body RequestBody) *request {
 	return &request{
 		headers: headers,
 		body:    body,
@@ -141,4 +154,12 @@ func newUnknownRequestBody() *unknownRequestBody {
 
 func newEmptyRequestBody() *emptyRequestBody {
 	return &emptyRequestBody{}
+}
+
+func NewFakeRequestBody(fields map[string]string) *fakeRequestBody {
+	return &fakeRequestBody{fields: fields}
+}
+
+func NewEmptyFakeRequestBody() *fakeRequestBody {
+	return &fakeRequestBody{fields: map[string]string{}}
 }

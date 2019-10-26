@@ -19,6 +19,22 @@ type TaskProjection interface {
 	Task(ID string) *Task
 }
 
+type fakeTaskProjection struct {
+	tasks map[string]*Task
+}
+
+func (f *fakeTaskProjection) Tasks() []*Task {
+	tasks := make([]*Task, 0)
+	for _, task := range f.tasks {
+		tasks = append(tasks, task)
+	}
+	return tasks
+}
+
+func (f *fakeTaskProjection) Task(ID string) *Task {
+	return f.tasks[ID]
+}
+
 type taskProjection struct {
 	es             eventstream.EventStream
 	streamPosition uint64
@@ -105,4 +121,8 @@ func (t *taskProjection) Task(ID string) *Task {
 func NewTaskProjection(es eventstream.EventStream) *taskProjection {
 	projection := &taskProjection{es: es, tasks: make(map[string]*Task, 0)}
 	return projection
+}
+
+func NewFakeTaskProjection(tasks map[string]*Task) *fakeTaskProjection {
+	return &fakeTaskProjection{tasks: tasks}
 }
