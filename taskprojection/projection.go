@@ -20,9 +20,9 @@ type TaskProjection interface {
 }
 
 type taskProjection struct {
-	es      eventstream.EventStream
-	eventID uint64
-	tasks   map[string]*Task
+	es             eventstream.EventStream
+	streamPosition uint64
+	tasks          map[string]*Task
 }
 
 func (t *taskProjection) apply(evt eventstream.Event) {
@@ -54,7 +54,7 @@ func (t *taskProjection) applyTaskCompleted(evt *task.EvtTaskCompleted) {
 
 func (t *taskProjection) CatchupEventStream() error {
 	for {
-		evt, err := t.es.Read(t.eventID)
+		evt, err := t.es.Read(t.streamPosition)
 		if err != nil {
 			return err
 		}
@@ -64,20 +64,20 @@ func (t *taskProjection) CatchupEventStream() error {
 		}
 
 		t.apply(evt)
-		t.eventID++
+		t.streamPosition++
 	}
 }
 
 func (t *taskProjection) PollEventStream(intervalMilliseconds int) error {
 	for {
-		evt, err := t.es.Read(t.eventID)
+		evt, err := t.es.Read(t.streamPosition)
 		if err != nil {
 			return err
 		}
 
 		if evt != nil {
 			t.apply(evt)
-			t.eventID++
+			t.streamPosition++
 		}
 
 		time.Sleep(time.Duration(intervalMilliseconds) * time.Millisecond)

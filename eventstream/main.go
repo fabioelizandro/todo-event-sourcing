@@ -1,7 +1,7 @@
 package eventstream
 
 type EventStream interface {
-	Read(eventID uint64) (Event, error)
+	Read(streamPosition uint64) (Event, error)
 	ReadAllByCorrelationID(correlationID string) ([]Event, error)
 	Write(events []Event) error
 }
@@ -17,18 +17,18 @@ type InMemoryEventStream struct {
 	events []Event
 }
 
-func (stream *InMemoryEventStream) Read(eventID uint64) (Event, error) {
+func (stream *InMemoryEventStream) Read(streamPosition uint64) (Event, error) {
 	count := uint64(len(stream.events))
 
 	if count == 0 {
 		return nil, nil
 	}
 
-	if eventID+1 > count {
+	if streamPosition+1 > count {
 		return nil, nil
 	}
 
-	return stream.events[eventID], nil
+	return stream.events[streamPosition], nil
 }
 
 func (stream *InMemoryEventStream) ReadAllByCorrelationID(correlationID string) ([]Event, error) {
