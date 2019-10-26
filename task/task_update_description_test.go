@@ -13,10 +13,10 @@ func Test_it_updates_task_description(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
-	assert.Nil(t, eventStream.Write([]eventstream.Event{createdEvent}))
+	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
 
 	cmdHandler := task.NewCmdHandler(eventStream)
-	assert.Nil(t, cmdHandler.Handle(cmd))
+	assert.NoError(t, cmdHandler.Handle(cmd))
 
 	expectedEvents := []eventstream.Event{
 		createdEvent,
@@ -32,11 +32,11 @@ func Test_it_ignores_cmd_when_new_description_is_equal_to_current(t *testing.T) 
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
-	assert.Nil(t, eventStream.Write([]eventstream.Event{createdEvent}))
+	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
 
 	cmdHandler := task.NewCmdHandler(eventStream)
-	assert.Nil(t, cmdHandler.Handle(cmd))
-	assert.Nil(t, cmdHandler.Handle(cmd))
+	assert.NoError(t, cmdHandler.Handle(cmd))
+	assert.NoError(t, cmdHandler.Handle(cmd))
 
 	expectedEvents := []eventstream.Event{
 		createdEvent,
@@ -53,7 +53,7 @@ func Test_it_ignores_cmd_when_task_is_not_found(t *testing.T) {
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 
 	cmdHandler := task.NewCmdHandler(eventStream)
-	assert.Nil(t, cmdHandler.Handle(cmd))
+	assert.NoError(t, cmdHandler.Handle(cmd))
 
 	assert.Equal(t, 0, len(eventStream.InMemoryReadAll()))
 }

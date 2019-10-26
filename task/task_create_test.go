@@ -19,7 +19,7 @@ func Test_it_create_tasks(t *testing.T) {
 	}
 	cmdHandler := task.NewCmdHandler(eventStream)
 
-	assert.Nil(t, cmdHandler.Handle(cmd))
+	assert.NoError(t, cmdHandler.Handle(cmd))
 
 	expectedEvents := []eventstream.Event{
 		&task.EvtTaskCreated{
@@ -36,8 +36,8 @@ func Test_it_does_not_create_tasks_with_same_id(t *testing.T) {
 	cmd := &task.CmdTaskCreate{ID: uuid.New().String(), Description: "Do the dishes"}
 	cmdHandler := task.NewCmdHandler(eventStream)
 
-	assert.Nil(t, cmdHandler.Handle(cmd))
-	assert.Nil(t, cmdHandler.Handle(cmd))
+	assert.NoError(t, cmdHandler.Handle(cmd))
+	assert.NoError(t, cmdHandler.Handle(cmd))
 
 	expectedEvents := []eventstream.Event{
 		&task.EvtTaskCreated{
