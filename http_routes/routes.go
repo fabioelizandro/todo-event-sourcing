@@ -30,6 +30,22 @@ func (t *taskListRoute) Handle(Request) (Response, error) {
 	return newJsonResponse(Headers{}, t.projection.Tasks()), nil
 }
 
+type taskShowRoute struct {
+	projection taskprojection.TaskProjection
+}
+
+func (t *taskShowRoute) Methods() []string {
+	return []string{"GET"}
+}
+
+func (t *taskShowRoute) Path() string {
+	return "/todos/{id}"
+}
+
+func (t *taskShowRoute) Handle(r Request) (Response, error) {
+	return newJsonResponse(Headers{}, t.projection.Task(r.PathParams().Value("id", ""))), nil
+}
+
 type taskCreateRoute struct {
 	commandHandler task.CmdHandler
 }
@@ -63,4 +79,8 @@ func NewTaskListRoute(projection taskprojection.TaskProjection) *taskListRoute {
 
 func NewTaskCreateRoute(commandHandler task.CmdHandler) *taskCreateRoute {
 	return &taskCreateRoute{commandHandler: commandHandler}
+}
+
+func NewTaskShowRoute(projection taskprojection.TaskProjection) *taskShowRoute {
+	return &taskShowRoute{projection: projection}
 }

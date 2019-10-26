@@ -4,6 +4,9 @@ import (
 	"fabioelizandro/todo-event-sourcing/logger"
 	"io/ioutil"
 	"net/http"
+	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 type StdHttpRouteAdapter interface {
@@ -70,7 +73,12 @@ func (s *stdHttpRouteAdapter) stdRouteAdapterRequest(r *http.Request) (Request, 
 		return nil, err
 	}
 
-	return NewRequest(headers, requestBody), nil
+	pathParams := PathParams{}
+	for key, value := range mux.Vars(r) {
+		pathParams[strings.ToLower(key)] = value
+	}
+
+	return NewRequest(headers, requestBody, pathParams), nil
 }
 
 func (s *stdHttpRouteAdapter) stdRouteAdapterResponse(response Response, w http.ResponseWriter) error {

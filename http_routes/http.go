@@ -22,6 +22,17 @@ func (h Headers) Value(name string, defaultValue string) string {
 	}
 }
 
+type PathParams map[string]string
+
+func (h PathParams) Value(name string, defaultValue string) string {
+	value := h[strings.ToLower(name)]
+	if value == "" {
+		return defaultValue
+	} else {
+		return value
+	}
+}
+
 type RequestBody interface {
 	FieldStr(name string, defaultValue string) string
 }
@@ -29,6 +40,7 @@ type RequestBody interface {
 type Request interface {
 	Headers() Headers
 	Body() RequestBody
+	PathParams() PathParams
 }
 
 type Response interface {
@@ -37,8 +49,9 @@ type Response interface {
 }
 
 type request struct {
-	headers Headers
-	body    RequestBody
+	headers    Headers
+	body       RequestBody
+	pathParams PathParams
 }
 
 func (j *request) Headers() Headers {
@@ -47,6 +60,10 @@ func (j *request) Headers() Headers {
 
 func (j *request) Body() RequestBody {
 	return j.body
+}
+
+func (j *request) PathParams() PathParams {
+	return j.pathParams
 }
 
 type emptyRequestBody struct {
@@ -117,10 +134,11 @@ func newJsonOkResponse(headers Headers) *jsonResponse {
 	return newJsonResponse(defaultHeaders, map[string]string{"message": "OK"})
 }
 
-func NewRequest(headers Headers, body RequestBody) *request {
+func NewRequest(headers Headers, body RequestBody, pathParams PathParams) *request {
 	return &request{
-		headers: headers,
-		body:    body,
+		headers:    headers,
+		body:       body,
+		pathParams: pathParams,
 	}
 }
 
