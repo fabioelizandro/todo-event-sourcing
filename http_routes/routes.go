@@ -45,7 +45,7 @@ func (t *taskCreateRoute) Path() string {
 func (t *taskCreateRoute) Handle(r Request) (Response, error) {
 	cmd := &task.CmdTaskCreate{
 		ID:          uuid.New().String(),
-		Description: r.Body().GetStr("description", ""),
+		Description: r.Body().FieldStr("description", ""),
 		CreatedAt:   time.Now().UnixNano(),
 	}
 

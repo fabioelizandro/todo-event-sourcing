@@ -13,8 +13,17 @@ func (h Headers) Merge(headers Headers) {
 	}
 }
 
+func (h Headers) Value(name string, defaultValue string) string {
+	value := h[strings.ToLower(name)]
+	if value == "" {
+		return defaultValue
+	} else {
+		return value
+	}
+}
+
 type RequestBody interface {
-	GetStr(field string, defaultValue string) string
+	FieldStr(name string, defaultValue string) string
 }
 
 type Request interface {
@@ -40,12 +49,26 @@ func (j *request) Body() RequestBody {
 	return j.body
 }
 
+type emptyRequestBody struct {
+}
+
+func (e *emptyRequestBody) FieldStr(field string, defaultValue string) string {
+	return defaultValue
+}
+
+type unknownRequestBody struct {
+}
+
+func (e *unknownRequestBody) FieldStr(field string, defaultValue string) string {
+	return defaultValue
+}
+
 type jsonRequestBody struct {
 	rawBody []byte
 	body    map[string]string
 }
 
-func (j *jsonRequestBody) GetStr(field string, defaultValue string) string {
+func (j *jsonRequestBody) FieldStr(field string, defaultValue string) string {
 	value := j.body[field]
 	if value == "" {
 		return defaultValue
@@ -81,14 +104,28 @@ func newJsonOkResponse(headers Headers) *jsonResponse {
 	return newJsonResponse(defaultHeaders, map[string]string{"message": "OK"})
 }
 
-func NewRequest(headers Headers, body RequestBody) *request {
+func newRequest(headers Headers, body RequestBody) *request {
 	return &request{
 		headers: headers,
 		body:    body,
 	}
 }
 
-func NewJsonRequestBody(rawBody []byte) (*jsonRequestBody, error) {
+func newRequestBody(headers Headers, rawBody []byte) (RequestBody, error) {
+	if len(rawBody) == 0 {
+		return newEmptyRequestBody(), nil
+	}
+
+	contentType := headers.Value("content-type", "")
+	switch contentType {
+	case "application/json":
+		return newJsonRequestBody(rawBody)
+	default:
+		return newUnknownRequestBody(), nil
+	}
+}
+
+func newJsonRequestBody(rawBody []byte) (*jsonRequestBody, error) {
 	body := map[string]string{}
 	err := json.Unmarshal(rawBody, body)
 	if err != nil {
@@ -96,4 +133,12 @@ func NewJsonRequestBody(rawBody []byte) (*jsonRequestBody, error) {
 	}
 
 	return &jsonRequestBody{rawBody: rawBody, body: body}, nil
+}
+
+func newUnknownRequestBody() *unknownRequestBody {
+	return &unknownRequestBody{}
+}
+
+func newEmptyRequestBody() *emptyRequestBody {
+	return &emptyRequestBody{}
 }
