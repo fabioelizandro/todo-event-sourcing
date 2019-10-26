@@ -15,6 +15,7 @@ func main() {
 	stream := eventstream.NewInMemoryEventStream()
 	commandHandler := task.NewCmdHandler(stream)
 	projection := taskprojection.NewTaskProjection(stream)
+	routeAdapter := http_routes.NewStdHttpRouteAdapter()
 	routes := []http_routes.Route{
 		http_routes.NewTaskListRoute(projection),
 		http_routes.NewTaskCreateRoute(commandHandler),
@@ -22,7 +23,7 @@ func main() {
 
 	r := mux.NewRouter()
 	for _, route := range routes {
-		r.HandleFunc(route.Path(), http_routes.StdHttpRouteAdapter(route)).Methods(route.Methods()...)
+		r.HandleFunc(route.Path(), routeAdapter.Transform(route)).Methods(route.Methods()...)
 	}
 
 	go projection.PollEventStream(100)

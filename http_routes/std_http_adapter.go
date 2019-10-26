@@ -5,15 +5,22 @@ import (
 	"net/http"
 )
 
-func StdHttpRouteAdapter(route Route) func(w http.ResponseWriter, r *http.Request) {
+type StdHttpRouteAdapter interface {
+	Transform(Route) func(w http.ResponseWriter, r *http.Request)
+}
+
+type stdHttpRouteAdapter struct {
+}
+
+func (s *stdHttpRouteAdapter) Transform(route Route) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if recover() != nil {
-				stdRouteAdapterSomethingWentWrong(w)
+				s.stdRouteAdapterSomethingWentWrong(w)
 			}
 		}()
 
-		request, err := stdRouteAdapterRequest(r)
+		request, err := s.stdRouteAdapterRequest(r)
 		if err != nil {
 			panic(err)
 		}
@@ -23,14 +30,14 @@ func StdHttpRouteAdapter(route Route) func(w http.ResponseWriter, r *http.Reques
 			panic(err)
 		}
 
-		err = stdRouteAdapterResponse(response, w)
+		err = s.stdRouteAdapterResponse(response, w)
 		if err != nil {
 			panic(err)
 		}
 	}
 }
 
-func stdRouteAdapterRequest(r *http.Request) (Request, error) {
+func (s *stdHttpRouteAdapter) stdRouteAdapterRequest(r *http.Request) (Request, error) {
 	headers := Headers{}
 	for key, _ := range r.Header {
 		headers[key] = r.Header.Get(key)
@@ -49,7 +56,7 @@ func stdRouteAdapterRequest(r *http.Request) (Request, error) {
 	return newRequest(headers, requestBody), nil
 }
 
-func stdRouteAdapterResponse(response Response, w http.ResponseWriter) error {
+func (s *stdHttpRouteAdapter) stdRouteAdapterResponse(response Response, w http.ResponseWriter) error {
 	body, err := response.Body()
 	if err != nil {
 		return err
@@ -72,10 +79,14 @@ func stdRouteAdapterResponse(response Response, w http.ResponseWriter) error {
 	return nil
 }
 
-func stdRouteAdapterSomethingWentWrong(w http.ResponseWriter) {
+func (s *stdHttpRouteAdapter) stdRouteAdapterSomethingWentWrong(w http.ResponseWriter) {
 	w.WriteHeader(500)
 	_, err := w.Write([]byte("Something Went Wrong"))
 	if err != nil {
 		panic(err)
 	}
+}
+
+func NewStdHttpRouteAdapter() StdHttpRouteAdapter {
+	return &stdHttpRouteAdapter{}
 }
