@@ -3,6 +3,7 @@ package main
 import (
 	"fabioelizandro/todo-event-sourcing/eventstream"
 	"fabioelizandro/todo-event-sourcing/http_routes"
+	"fabioelizandro/todo-event-sourcing/logger"
 	"fabioelizandro/todo-event-sourcing/task"
 	"fabioelizandro/todo-event-sourcing/taskprojection"
 	"log"
@@ -12,10 +13,11 @@ import (
 )
 
 func main() {
+	zlog := logger.NewZLog()
 	stream := eventstream.NewInMemoryEventStream()
 	commandHandler := task.NewCmdHandler(stream)
 	projection := taskprojection.NewTaskProjection(stream)
-	routeAdapter := http_routes.NewStdHttpRouteAdapter()
+	routeAdapter := http_routes.NewStdHttpRouteAdapter(zlog)
 	routes := []http_routes.Route{
 		http_routes.NewTaskListRoute(projection),
 		http_routes.NewTaskCreateRoute(commandHandler),
