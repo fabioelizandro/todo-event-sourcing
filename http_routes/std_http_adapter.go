@@ -88,12 +88,7 @@ func (s *stdHttpRouteAdapter) stdRouteAdapterResponse(response Response, w http.
 	}
 
 	for name, value := range response.Headers() {
-		w.Header().Add(name, value)
-	}
-
-	err = w.Header().Write(w)
-	if err != nil {
-		return err
+		w.Header().Set(name, value)
 	}
 
 	_, err = w.Write(body)
