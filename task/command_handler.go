@@ -33,7 +33,7 @@ func (c *cmdHandler) Handle(cmd interface{}) error {
 func (c *cmdHandler) handleCmdTaskCreate(cmd *CmdTaskCreate) error {
 	domainModel, err := c.loadDomainModel(cmd.ID)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	events := domainModel.create(cmd.ID, cmd.Description, cmd.CreatedAt)
