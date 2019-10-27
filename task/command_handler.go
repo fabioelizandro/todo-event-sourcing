@@ -9,6 +9,23 @@ type CmdHandler interface {
 	Handle(cmd interface{}) error
 }
 
+type fakeCmdHandler struct {
+	executedCmds []interface{}
+}
+
+func NewFakeCmdHandler() *fakeCmdHandler {
+	return &fakeCmdHandler{}
+}
+
+func (f *fakeCmdHandler) Handle(cmd interface{}) error {
+	f.executedCmds = append(f.executedCmds, cmd)
+	return nil
+}
+
+func (f *fakeCmdHandler) ExecutedCmds() []interface{} {
+	return f.executedCmds
+}
+
 type cmdHandler struct {
 	eventStream eventstream.EventStream
 }

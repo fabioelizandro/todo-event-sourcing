@@ -33,6 +33,17 @@ func (h PathParams) Value(name string, defaultValue string) string {
 	}
 }
 
+type RequestBodyFields map[string]string
+
+func (h RequestBodyFields) Value(name string, defaultValue string) string {
+	value := h[strings.ToLower(name)]
+	if value == "" {
+		return defaultValue
+	} else {
+		return value
+	}
+}
+
 type RequestBody interface {
 	FieldStr(name string, defaultValue string) string
 }
@@ -81,16 +92,11 @@ func (e *unknownRequestBody) FieldStr(field string, defaultValue string) string 
 }
 
 type fakeRequestBody struct {
-	fields map[string]string
+	fields RequestBodyFields
 }
 
 func (f *fakeRequestBody) FieldStr(name string, defaultValue string) string {
-	value := f.fields[name]
-	if value == "" {
-		return defaultValue
-	} else {
-		return value
-	}
+	return f.fields.Value(name, defaultValue)
 }
 
 type jsonRequestBody struct {
@@ -174,10 +180,10 @@ func newEmptyRequestBody() *emptyRequestBody {
 	return &emptyRequestBody{}
 }
 
-func NewFakeRequestBody(fields map[string]string) *fakeRequestBody {
+func NewFakeRequestBody(fields RequestBodyFields) *fakeRequestBody {
 	return &fakeRequestBody{fields: fields}
 }
 
 func NewEmptyFakeRequestBody() *fakeRequestBody {
-	return &fakeRequestBody{fields: map[string]string{}}
+	return &fakeRequestBody{fields: RequestBodyFields{}}
 }

@@ -13,7 +13,7 @@ func Test_it_returns_task_show_route_configuration(t *testing.T) {
 	tasks := map[string]*taskprojection.Task{}
 	route := http_routes.NewTaskShowRoute(taskprojection.NewFakeTaskProjection(tasks))
 	assert.Equal(t, []string{"GET"}, route.Methods())
-	assert.Equal(t, "/todos/{ID}", route.Path())
+	assert.Equal(t, "/todos/{id}", route.Path())
 }
 
 func Test_it_returns_tasks_projection_show(t *testing.T) {
