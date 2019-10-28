@@ -16,7 +16,9 @@ func Test_it_marks_task_as_completed(t *testing.T) {
 	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
 
 	cmdHandler := task.NewCmdHandler(eventStream)
-	assert.NoError(t, cmdHandler.Handle(cmd))
+	rejection, err := cmdHandler.Handle(cmd)
+	assert.Nil(t, rejection)
+	assert.NoError(t, err)
 
 	expectedEvents := []eventstream.Event{
 		createdEvent,
@@ -32,8 +34,13 @@ func Test_it_ignores_complete_cmd_when_is_complete_already(t *testing.T) {
 	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
 
 	cmdHandler := task.NewCmdHandler(eventStream)
-	assert.NoError(t, cmdHandler.Handle(cmd))
-	assert.NoError(t, cmdHandler.Handle(cmd))
+	rejection, err := cmdHandler.Handle(cmd)
+	assert.Nil(t, rejection)
+	assert.NoError(t, err)
+
+	rejection, err = cmdHandler.Handle(cmd)
+	assert.Nil(t, rejection)
+	assert.NoError(t, err)
 
 	expectedEvents := []eventstream.Event{
 		createdEvent,
@@ -47,7 +54,9 @@ func Test_it_ignores_cmd_complete_for_not_found_tasks(t *testing.T) {
 	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
 
 	cmdHandler := task.NewCmdHandler(eventStream)
-	assert.NoError(t, cmdHandler.Handle(cmd))
+	rejection, err := cmdHandler.Handle(cmd)
+	assert.Nil(t, rejection)
+	assert.NoError(t, err)
 
 	assert.Equal(t, 0, len(eventStream.InMemoryReadAll()))
 }

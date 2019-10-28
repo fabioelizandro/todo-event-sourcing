@@ -65,7 +65,7 @@ func (t *taskCreateRoute) Handle(r Request) (Response, error) {
 		CreatedAt:   time.Now().UnixNano(),
 	}
 
-	err := t.commandHandler.Handle(cmd)
+	_, err := t.commandHandler.Handle(cmd)
 	if err != nil {
 		return nil, err
 	}

@@ -5,8 +5,13 @@ import (
 	"fmt"
 )
 
+type CmdRejection interface {
+	Reason() string
+	Field() string
+}
+
 type CmdHandler interface {
-	Handle(cmd interface{}) error
+	Handle(cmd interface{}) (CmdRejection, error)
 }
 
 type fakeCmdHandler struct {
@@ -17,9 +22,9 @@ func NewFakeCmdHandler() *fakeCmdHandler {
 	return &fakeCmdHandler{}
 }
 
-func (f *fakeCmdHandler) Handle(cmd interface{}) error {
+func (f *fakeCmdHandler) Handle(cmd interface{}) (CmdRejection, error) {
 	f.executedCmds = append(f.executedCmds, cmd)
-	return nil
+	return nil, nil
 }
 
 func (f *fakeCmdHandler) ExecutedCmds() []interface{} {
@@ -34,7 +39,7 @@ func NewCmdHandler(eventStream eventstream.EventStream) *cmdHandler {
 	return &cmdHandler{eventStream: eventStream}
 }
 
-func (c *cmdHandler) Handle(cmd interface{}) error {
+func (c *cmdHandler) Handle(cmd interface{}) (CmdRejection, error) {
 	switch v := cmd.(type) {
 	case *CmdTaskCreate:
 		return c.handleCmdTaskCreate(v)
@@ -43,38 +48,38 @@ func (c *cmdHandler) Handle(cmd interface{}) error {
 	case *CmdTaskComplete:
 		return c.handleCmdTaskComplete(v)
 	default:
-		return fmt.Errorf("command not found %v", v)
+		return nil, fmt.Errorf("command not found %v", v)
 	}
 }
 
-func (c *cmdHandler) handleCmdTaskCreate(cmd *CmdTaskCreate) error {
+func (c *cmdHandler) handleCmdTaskCreate(cmd *CmdTaskCreate) (CmdRejection, error) {
 	domainModel, err := c.loadDomainModel(cmd.ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	events := domainModel.create(cmd.ID, cmd.Description, cmd.CreatedAt)
-	return c.eventStream.Write(events)
+	return nil, c.eventStream.Write(events)
 }
 
-func (c *cmdHandler) handleCmdTaskUpdateDescription(cmd *CmdTaskUpdateDescription) error {
+func (c *cmdHandler) handleCmdTaskUpdateDescription(cmd *CmdTaskUpdateDescription) (CmdRejection, error) {
 	domainModel, err := c.loadDomainModel(cmd.ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	events := domainModel.updateDescription(cmd.NewDescription)
-	return c.eventStream.Write(events)
+	return nil, c.eventStream.Write(events)
 }
 
-func (c *cmdHandler) handleCmdTaskComplete(cmd *CmdTaskComplete) error {
+func (c *cmdHandler) handleCmdTaskComplete(cmd *CmdTaskComplete) (CmdRejection, error) {
 	domainModel, err := c.loadDomainModel(cmd.ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	events := domainModel.complete()
-	return c.eventStream.Write(events)
+	return nil, c.eventStream.Write(events)
 }
 
 func (c *cmdHandler) loadDomainModel(ID string) (*taskDomainModel, error) {

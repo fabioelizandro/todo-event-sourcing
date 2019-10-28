@@ -16,7 +16,9 @@ func Test_it_updates_task_description(t *testing.T) {
 	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
 
 	cmdHandler := task.NewCmdHandler(eventStream)
-	assert.NoError(t, cmdHandler.Handle(cmd))
+	rejection, err := cmdHandler.Handle(cmd)
+	assert.Nil(t, rejection)
+	assert.NoError(t, err)
 
 	expectedEvents := []eventstream.Event{
 		createdEvent,
@@ -35,8 +37,13 @@ func Test_it_ignores_cmd_when_new_description_is_equal_to_current(t *testing.T) 
 	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
 
 	cmdHandler := task.NewCmdHandler(eventStream)
-	assert.NoError(t, cmdHandler.Handle(cmd))
-	assert.NoError(t, cmdHandler.Handle(cmd))
+	rejection, err := cmdHandler.Handle(cmd)
+	assert.Nil(t, rejection)
+	assert.NoError(t, err)
+
+	rejection, err = cmdHandler.Handle(cmd)
+	assert.Nil(t, rejection)
+	assert.NoError(t, err)
 
 	expectedEvents := []eventstream.Event{
 		createdEvent,
@@ -53,7 +60,9 @@ func Test_it_ignores_cmd_when_task_is_not_found(t *testing.T) {
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 
 	cmdHandler := task.NewCmdHandler(eventStream)
-	assert.NoError(t, cmdHandler.Handle(cmd))
+	rejection, err := cmdHandler.Handle(cmd)
+	assert.Nil(t, rejection)
+	assert.NoError(t, err)
 
 	assert.Equal(t, 0, len(eventStream.InMemoryReadAll()))
 }
