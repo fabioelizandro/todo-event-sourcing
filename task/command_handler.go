@@ -67,7 +67,11 @@ func (c *cmdHandler) handleCmdTaskUpdateDescription(cmd *CmdTaskUpdateDescriptio
 		return nil, err
 	}
 
-	events := domainModel.updateDescription(cmd.NewDescription)
+	events, rejection := domainModel.updateDescription(cmd.NewDescription)
+	if rejection != nil {
+		return rejection, nil
+	}
+
 	return nil, c.eventStream.Write(events)
 }
 

@@ -33,11 +33,15 @@ func (m *taskDomainModel) applyTaskCompleted(evt *EvtTaskCompleted) {
 	m.completed = true
 }
 
-func (m *taskDomainModel) updateDescription(newDescription string) []eventstream.Event {
+func (m *taskDomainModel) updateDescription(newDescription string) ([]eventstream.Event, CmdRejection) {
 	events := make([]eventstream.Event, 0)
 
 	if m.id == "" {
-		return events
+		return events, nil
+	}
+
+	if len(newDescription) == 0 {
+		return nil, &CmdRejectionRequiredField{Name: "NewDescription"}
 	}
 
 	if m.description != newDescription {
@@ -47,7 +51,7 @@ func (m *taskDomainModel) updateDescription(newDescription string) []eventstream
 		})
 	}
 
-	return events
+	return events, nil
 }
 
 func (m *taskDomainModel) complete() []eventstream.Event {
@@ -69,18 +73,20 @@ func (m *taskDomainModel) complete() []eventstream.Event {
 func (m *taskDomainModel) create(ID string, description string, createdAt int64) ([]eventstream.Event, CmdRejection) {
 	events := make([]eventstream.Event, 0)
 
+	if m.id != "" {
+		return events, nil
+	}
+
 	if len(description) == 0 {
 		return nil, &CmdRejectionRequiredField{Name: "Description"}
 	}
 
-	if m.id == "" {
-		events = []eventstream.Event{
-			&EvtTaskCreated{
-				ID:          ID,
-				Description: description,
-				CreatedAt:   createdAt,
-			},
-		}
+	events = []eventstream.Event{
+		&EvtTaskCreated{
+			ID:          ID,
+			Description: description,
+			CreatedAt:   createdAt,
+		},
 	}
 
 	return events, nil
