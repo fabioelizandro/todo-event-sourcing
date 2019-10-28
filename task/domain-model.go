@@ -66,8 +66,12 @@ func (m *taskDomainModel) complete() []eventstream.Event {
 	return events
 }
 
-func (m *taskDomainModel) create(ID string, description string, createdAt int64) []eventstream.Event {
+func (m *taskDomainModel) create(ID string, description string, createdAt int64) ([]eventstream.Event, CmdRejection) {
 	events := make([]eventstream.Event, 0)
+
+	if len(description) == 0 {
+		return nil, &CmdRejectionRequiredField{Name: "Description"}
+	}
 
 	if m.id == "" {
 		events = []eventstream.Event{
@@ -79,5 +83,5 @@ func (m *taskDomainModel) create(ID string, description string, createdAt int64)
 		}
 	}
 
-	return events
+	return events, nil
 }

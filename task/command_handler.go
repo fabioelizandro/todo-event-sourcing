@@ -5,13 +5,8 @@ import (
 	"fmt"
 )
 
-type CmdRejection interface {
-	Reason() string
-	Field() string
-}
-
 type CmdHandler interface {
-	Handle(cmd interface{}) (CmdRejection, error)
+	Handle(cmd Cmd) (CmdRejection, error)
 }
 
 type fakeCmdHandler struct {
@@ -22,7 +17,7 @@ func NewFakeCmdHandler() *fakeCmdHandler {
 	return &fakeCmdHandler{}
 }
 
-func (f *fakeCmdHandler) Handle(cmd interface{}) (CmdRejection, error) {
+func (f *fakeCmdHandler) Handle(cmd Cmd) (CmdRejection, error) {
 	f.executedCmds = append(f.executedCmds, cmd)
 	return nil, nil
 }
@@ -39,7 +34,7 @@ func NewCmdHandler(eventStream eventstream.EventStream) *cmdHandler {
 	return &cmdHandler{eventStream: eventStream}
 }
 
-func (c *cmdHandler) Handle(cmd interface{}) (CmdRejection, error) {
+func (c *cmdHandler) Handle(cmd Cmd) (CmdRejection, error) {
 	switch v := cmd.(type) {
 	case *CmdTaskCreate:
 		return c.handleCmdTaskCreate(v)
@@ -58,7 +53,11 @@ func (c *cmdHandler) handleCmdTaskCreate(cmd *CmdTaskCreate) (CmdRejection, erro
 		return nil, err
 	}
 
-	events := domainModel.create(cmd.ID, cmd.Description, cmd.CreatedAt)
+	events, rejection := domainModel.create(cmd.ID, cmd.Description, cmd.CreatedAt)
+	if rejection != nil {
+		return rejection, nil
+	}
+
 	return nil, c.eventStream.Write(events)
 }
 

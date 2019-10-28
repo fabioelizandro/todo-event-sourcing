@@ -1,5 +1,8 @@
 package task
 
+type Cmd interface {
+}
+
 type CmdTaskCreate struct {
 	ID          string
 	Description string

@@ -33,6 +33,20 @@ func Test_it_create_tasks(t *testing.T) {
 	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
 }
 
+func Test_it_requires_description_when_creating(t *testing.T) {
+	cmd := &task.CmdTaskCreate{
+		ID:          "123",
+		Description: "",
+		CreatedAt:   time.Now().UnixNano(),
+	}
+	cmdHandler := task.NewCmdHandler(eventstream.NewInMemoryEventStream())
+
+	rejection, err := cmdHandler.Handle(cmd)
+	assert.NoError(t, err)
+
+	assert.Equal(t, rejection, &task.CmdRejectionRequiredField{Name: "Description"})
+}
+
 func Test_it_does_not_create_tasks_with_same_id(t *testing.T) {
 	eventStream := eventstream.NewInMemoryEventStream()
 	cmd := &task.CmdTaskCreate{ID: uuid.New().String(), Description: "Do the dishes"}
