@@ -5,7 +5,7 @@
 
 [x] - Validate commands
 [x] - Domain validate business logics and reject command
-[ ] - Create http_base package
+[x] - Create http_essentials package
 [ ] - Think in a better way to avoid sequential ids for the event stream
 [ ] - Make testable and test stream polling
 [ ] - Better error handling for stream polling

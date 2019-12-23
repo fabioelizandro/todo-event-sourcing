@@ -1,7 +1,8 @@
-package http_routes_test
+package routes_test
 
 import (
-	"fabioelizandro/todo-event-sourcing/http_routes"
+	"fabioelizandro/todo-event-sourcing/http_essentials"
+	"fabioelizandro/todo-event-sourcing/routes"
 	"fabioelizandro/todo-event-sourcing/task"
 	"testing"
 
@@ -9,19 +10,19 @@ import (
 )
 
 func Test_it_returns_task_create_route_configuration(t *testing.T) {
-	route := http_routes.NewTaskCreateRoute(task.NewFakeCmdHandler())
+	route := routes.NewTaskCreateRoute(task.NewFakeCmdHandler())
 	assert.Equal(t, []string{"POST"}, route.Methods())
 	assert.Equal(t, "/todos", route.Path())
 }
 
 func Test_it_execute_create_cmd_handler(t *testing.T) {
 	cmdHandler := task.NewFakeCmdHandler()
-	requestBody := http_routes.NewFakeRequestBody(http_routes.RequestBodyFields{
+	requestBody := http_essentials.NewFakeRequestBody(http_essentials.RequestBodyFields{
 		"description": "Do the dishes",
 	})
-	request := http_routes.NewRequest(http_routes.Headers{}, requestBody, http_routes.PathParams{})
+	request := http_essentials.NewRequest(http_essentials.Headers{}, requestBody, http_essentials.PathParams{})
 
-	route := http_routes.NewTaskCreateRoute(cmdHandler)
+	route := routes.NewTaskCreateRoute(cmdHandler)
 	response, err := route.Handle(request)
 	assert.NoError(t, err)
 

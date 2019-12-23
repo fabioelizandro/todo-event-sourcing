@@ -1,9 +1,15 @@
-package http_routes
+package http_essentials
 
 import (
 	"encoding/json"
 	"strings"
 )
+
+type Route interface {
+	Methods() []string
+	Path() string
+	Handle(Request) (Response, error)
+}
 
 type Headers map[string]string
 
@@ -126,18 +132,18 @@ func (j *jsonResponse) Body() ([]byte, error) {
 	return json.Marshal(j.payload)
 }
 
-func newJsonResponse(headers Headers, payload interface{}) *jsonResponse {
+func NewJsonResponse(headers Headers, payload interface{}) *jsonResponse {
 	defaultHeaders := Headers{"status": "200", "content-type": "application/json"}
 	defaultHeaders.Merge(headers)
 
 	return &jsonResponse{headers: defaultHeaders, payload: payload}
 }
 
-func newJsonOkResponse(headers Headers) *jsonResponse {
+func NewJsonOkResponse(headers Headers) *jsonResponse {
 	defaultHeaders := Headers{"status": "202"}
 	defaultHeaders.Merge(headers)
 
-	return newJsonResponse(defaultHeaders, map[string]string{"message": "OK"})
+	return NewJsonResponse(defaultHeaders, map[string]string{"message": "OK"})
 }
 
 func NewRequest(headers Headers, body RequestBody, pathParams PathParams) *request {

@@ -2,8 +2,9 @@ package main
 
 import (
 	"fabioelizandro/todo-event-sourcing/eventstream"
-	"fabioelizandro/todo-event-sourcing/http_routes"
+	"fabioelizandro/todo-event-sourcing/http_essentials"
 	"fabioelizandro/todo-event-sourcing/logger"
+	"fabioelizandro/todo-event-sourcing/routes"
 	"fabioelizandro/todo-event-sourcing/task"
 	"fabioelizandro/todo-event-sourcing/taskprojection"
 	"fmt"
@@ -19,15 +20,15 @@ func main() {
 	stream := eventstream.NewInMemoryEventStream()
 	commandHandler := task.NewCmdHandler(stream)
 	projection := taskprojection.NewTaskProjection(stream)
-	routeAdapter := http_routes.NewStdHttpRouteAdapter(zlog)
-	routes := []http_routes.Route{
-		http_routes.NewTaskListRoute(projection),
-		http_routes.NewTaskShowRoute(projection),
-		http_routes.NewTaskCreateRoute(commandHandler),
+	routeAdapter := http_essentials.NewStdHttpRouteAdapter(zlog)
+	httpRoutes := []http_essentials.Route{
+		routes.NewTaskListRoute(projection),
+		routes.NewTaskShowRoute(projection),
+		routes.NewTaskCreateRoute(commandHandler),
 	}
 
 	r := mux.NewRouter()
-	for _, route := range routes {
+	for _, route := range httpRoutes {
 		r.HandleFunc(route.Path(), routeAdapter.Transform(route)).Methods(route.Methods()...)
 	}
 
