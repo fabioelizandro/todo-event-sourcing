@@ -4,7 +4,6 @@ import (
 	"fabioelizandro/todo-event-sourcing/eventstream"
 	"fabioelizandro/todo-event-sourcing/task"
 	"sort"
-	"time"
 )
 
 type Task struct {
@@ -17,6 +16,7 @@ type Task struct {
 type TaskProjection interface {
 	Tasks() []*Task
 	Task(ID string) *Task
+	CatchupEventStream() error
 }
 
 type fakeTaskProjection struct {
@@ -33,6 +33,10 @@ func (f *fakeTaskProjection) Tasks() []*Task {
 
 func (f *fakeTaskProjection) Task(ID string) *Task {
 	return f.tasks[ID]
+}
+
+func (f *fakeTaskProjection) CatchupEventStream() error {
+	return nil
 }
 
 type taskProjection struct {
@@ -81,22 +85,6 @@ func (t *taskProjection) CatchupEventStream() error {
 
 		t.apply(evt)
 		t.streamPosition++
-	}
-}
-
-func (t *taskProjection) PollEventStream(intervalMilliseconds int) error {
-	for {
-		evt, err := t.es.Read(t.streamPosition)
-		if err != nil {
-			return err
-		}
-
-		if evt != nil {
-			t.apply(evt)
-			t.streamPosition++
-		}
-
-		time.Sleep(time.Duration(intervalMilliseconds) * time.Millisecond)
 	}
 }
 

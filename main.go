@@ -6,8 +6,10 @@ import (
 	"fabioelizandro/todo-event-sourcing/logger"
 	"fabioelizandro/todo-event-sourcing/task"
 	"fabioelizandro/todo-event-sourcing/taskprojection"
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -29,7 +31,18 @@ func main() {
 		r.HandleFunc(route.Path(), routeAdapter.Transform(route)).Methods(route.Methods()...)
 	}
 
-	go projection.PollEventStream(100)
+	go PollEventStream(projection)
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func PollEventStream(projection taskprojection.TaskProjection) {
+	for {
+		err := projection.CatchupEventStream()
+		if err != nil {
+			fmt.Printf("TaskProjection error: %e", err)
+		}
+
+		time.Sleep(time.Duration(100) * time.Millisecond)
+	}
 }
