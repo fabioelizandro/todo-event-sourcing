@@ -19,7 +19,7 @@ func main() {
 	stream := eventstream.NewInMemoryEventStream()
 	commandHandler := task.NewCmdHandler(stream)
 	projection := taskprojection.NewTaskProjection(stream)
-	routeAdapter := http_essentials.NewStdHttpRouteAdapter(zlog)
+	routeAdapter := newRouteAdapter(zlog)
 	httpRoutes := []http_essentials.Route{
 		routes.NewTaskListRoute(projection),
 		routes.NewTaskShowRoute(projection),
@@ -31,12 +31,21 @@ func main() {
 		r.HandleFunc(route.Path(), routeAdapter.Transform(route)).Methods(route.Methods()...)
 	}
 
-	go PollEventStream(projection, zlog)
+	go pollEventStream(projection, zlog)
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func PollEventStream(projection taskprojection.TaskProjection, log logger.Log) {
+func newRouteAdapter(log logger.Log) http_essentials.StdHttpRouteAdapter {
+	return http_essentials.NewStdHttpRouteAdapter(func(msg string, err error) {
+		log.
+			ErrorMsg(msg).
+			FieldErr(err).
+			Write()
+	})
+}
+
+func pollEventStream(projection taskprojection.TaskProjection, log logger.Log) {
 	for {
 		err := projection.CatchupEventStream()
 		if err != nil {

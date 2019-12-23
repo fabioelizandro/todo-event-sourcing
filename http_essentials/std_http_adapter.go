@@ -1,7 +1,6 @@
 package http_essentials
 
 import (
-	"fabioelizandro/todo-event-sourcing/logger"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -14,18 +13,14 @@ type StdHttpRouteAdapter interface {
 }
 
 type stdHttpRouteAdapter struct {
-	log logger.Log
+	onError func(string, error)
 }
 
 func (s *stdHttpRouteAdapter) Transform(route Route) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				s.log.
-					ErrorMsg("Server: panicked").
-					FieldInterface("panicked", err).
-					Write()
-
+				s.onError("Server: panicked", err.(error))
 				s.stdRouteAdapterSomethingWentWrong(w)
 			}
 		}()
@@ -37,21 +32,13 @@ func (s *stdHttpRouteAdapter) Transform(route Route) func(w http.ResponseWriter,
 
 		response, err := route.Handle(request)
 		if err != nil {
-			s.log.
-				ErrorMsg("Server: route handler error").
-				FieldErr(err).
-				Write()
-
+			s.onError("Server: route handler error", err)
 			s.stdRouteAdapterSomethingWentWrong(w)
 		}
 
 		err = s.stdRouteAdapterResponse(response, w)
 		if err != nil {
-			s.log.
-				ErrorMsg("Server: could not write response").
-				FieldErr(err).
-				Write()
-
+			s.onError("Server: could not write response", err)
 			s.stdRouteAdapterSomethingWentWrong(w)
 		}
 	}
@@ -107,6 +94,6 @@ func (s *stdHttpRouteAdapter) stdRouteAdapterSomethingWentWrong(w http.ResponseW
 	}
 }
 
-func NewStdHttpRouteAdapter(log logger.Log) StdHttpRouteAdapter {
-	return &stdHttpRouteAdapter{log}
+func NewStdHttpRouteAdapter(onError func(string, error)) StdHttpRouteAdapter {
+	return &stdHttpRouteAdapter{onError: onError}
 }
