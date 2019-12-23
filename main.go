@@ -7,7 +7,6 @@ import (
 	"fabioelizandro/todo-event-sourcing/routes"
 	"fabioelizandro/todo-event-sourcing/task"
 	"fabioelizandro/todo-event-sourcing/taskprojection"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -32,16 +31,16 @@ func main() {
 		r.HandleFunc(route.Path(), routeAdapter.Transform(route)).Methods(route.Methods()...)
 	}
 
-	go PollEventStream(projection)
+	go PollEventStream(projection, zlog)
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func PollEventStream(projection taskprojection.TaskProjection) {
+func PollEventStream(projection taskprojection.TaskProjection, log logger.Log) {
 	for {
 		err := projection.CatchupEventStream()
 		if err != nil {
-			fmt.Printf("TaskProjection error: %e", err)
+			log.ErrorMsg("TaskProjection Polling").FieldErr(err).Write()
 		}
 
 		time.Sleep(time.Duration(100) * time.Millisecond)
