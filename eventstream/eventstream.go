@@ -13,8 +13,6 @@ type StreamReadResult interface {
 }
 
 type StreamPosition interface {
-	Before(StreamPosition) bool
-	After(StreamPosition) bool
 	Value() interface{}
 }
 
