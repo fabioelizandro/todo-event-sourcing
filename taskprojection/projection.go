@@ -41,7 +41,7 @@ func (f *fakeTaskProjection) CatchupEventStream() error {
 
 type taskProjection struct {
 	es             eventstream.EventStream
-	streamPosition uint64
+	streamPosition eventstream.StreamPosition
 	tasks          map[string]*Task
 }
 
@@ -74,17 +74,17 @@ func (t *taskProjection) applyTaskCompleted(evt *task.EvtTaskCompleted) {
 
 func (t *taskProjection) CatchupEventStream() error {
 	for {
-		evt, err := t.es.Read(t.streamPosition)
+		result, err := t.es.Read(t.streamPosition)
 		if err != nil {
 			return err
 		}
 
-		if evt == nil {
+		if result == nil {
 			return nil
 		}
 
-		t.apply(evt)
-		t.streamPosition++
+		t.apply(result.Event())
+		t.streamPosition = result.NextStreamPosition()
 	}
 }
 
@@ -107,8 +107,11 @@ func (t *taskProjection) Task(ID string) *Task {
 }
 
 func NewTaskProjection(es eventstream.EventStream) *taskProjection {
-	projection := &taskProjection{es: es, tasks: make(map[string]*Task, 0)}
-	return projection
+	return &taskProjection{
+		es:             es,
+		tasks:          make(map[string]*Task, 0),
+		streamPosition: es.FirstPosition(),
+	}
 }
 
 func NewFakeTaskProjection(tasks map[string]*Task) *fakeTaskProjection {
