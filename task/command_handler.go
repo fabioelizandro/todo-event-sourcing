@@ -87,7 +87,7 @@ func (c *cmdHandler) handleCmdTaskComplete(cmd *CmdTaskComplete) (CmdRejection, 
 
 func (c *cmdHandler) loadDomainModel(ID string) (*taskDomainModel, error) {
 	domainModel := &taskDomainModel{}
-	aggregateEvents, err := c.eventStream.ReadAllByCorrelationID(ID)
+	aggregateEvents, err := c.eventStream.ReadByCorrelationID(ID)
 	if err != nil {
 		return nil, err
 	}

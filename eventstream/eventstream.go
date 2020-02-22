@@ -2,7 +2,7 @@ package eventstream
 
 type EventStream interface {
 	Read(streamPosition uint64) (Event, error)
-	ReadAllByCorrelationID(correlationID string) ([]Event, error)
+	ReadByCorrelationID(correlationID string) ([]Event, error)
 	Write(events []Event) error
 }
 
@@ -30,7 +30,7 @@ func (stream *InMemoryEventStream) Read(streamPosition uint64) (Event, error) {
 	return stream.events[streamPosition], nil
 }
 
-func (stream *InMemoryEventStream) ReadAllByCorrelationID(correlationID string) ([]Event, error) {
+func (stream *InMemoryEventStream) ReadByCorrelationID(correlationID string) ([]Event, error) {
 	correlatedEvents := make([]Event, 0)
 	for _, event := range stream.events {
 		if event.CorrelationID() == correlationID {
