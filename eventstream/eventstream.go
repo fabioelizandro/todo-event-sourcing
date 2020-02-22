@@ -19,5 +19,4 @@ type StreamPosition interface {
 type Event interface {
 	Type() string
 	CorrelationID() string
-	Payload() ([]byte, error)
 }

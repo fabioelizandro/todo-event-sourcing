@@ -1,7 +1,5 @@
 package task
 
-import "encoding/json"
-
 type EvtTaskCreated struct {
 	ID          string
 	Description string
@@ -17,10 +15,6 @@ func (e *EvtTaskCreated) CorrelationID() string {
 	return e.ID
 }
 
-func (e *EvtTaskCreated) Payload() ([]byte, error) {
-	return json.Marshal(e)
-}
-
 type EvtTaskDescriptionUpdated struct {
 	ID          string
 	Description string
@@ -34,10 +28,6 @@ func (e *EvtTaskDescriptionUpdated) CorrelationID() string {
 	return e.ID
 }
 
-func (e *EvtTaskDescriptionUpdated) Payload() ([]byte, error) {
-	return json.Marshal(e)
-}
-
 type EvtTaskCompleted struct {
 	ID string
 }
@@ -48,8 +38,4 @@ func (e *EvtTaskCompleted) Type() string {
 
 func (e *EvtTaskCompleted) CorrelationID() string {
 	return e.ID
-}
-
-func (e *EvtTaskCompleted) Payload() ([]byte, error) {
-	return json.Marshal(e)
 }
