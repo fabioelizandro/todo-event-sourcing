@@ -9,7 +9,6 @@ type EventStream interface {
 type Event interface {
 	Type() string
 	CorrelationID() string
-	Category() string
 	Payload() ([]byte, error)
 }
 

@@ -17,10 +17,6 @@ func (e *EvtTaskCreated) CorrelationID() string {
 	return e.ID
 }
 
-func (e *EvtTaskCreated) Category() string {
-	return "TASK"
-}
-
 func (e *EvtTaskCreated) Payload() ([]byte, error) {
 	return json.Marshal(e)
 }
@@ -38,10 +34,6 @@ func (e *EvtTaskDescriptionUpdated) CorrelationID() string {
 	return e.ID
 }
 
-func (e *EvtTaskDescriptionUpdated) Category() string {
-	return "TASK"
-}
-
 func (e *EvtTaskDescriptionUpdated) Payload() ([]byte, error) {
 	return json.Marshal(e)
 }
@@ -56,10 +48,6 @@ func (e *EvtTaskCompleted) Type() string {
 
 func (e *EvtTaskCompleted) CorrelationID() string {
 	return e.ID
-}
-
-func (e *EvtTaskCompleted) Category() string {
-	return "TASK"
 }
 
 func (e *EvtTaskCompleted) Payload() ([]byte, error) {
