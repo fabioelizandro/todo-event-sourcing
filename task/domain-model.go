@@ -8,7 +8,9 @@ type taskDomainModel struct {
 	completed   bool
 }
 
-func (m *taskDomainModel) apply(evt eventstream.Event) {
+func (m *taskDomainModel) apply(evtEnvelope eventstream.EventEnvelope) {
+	evt := evtEnvelope.Event()
+
 	switch v := evt.(type) {
 	case *EvtTaskCreated:
 		m.applyTaskCreated(v)

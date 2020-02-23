@@ -1,19 +1,23 @@
 package eventstream
 
+import "time"
+
 type EventStream interface {
 	FirstPosition() StreamPosition
-	Read(StreamPosition) (StreamReadResult, error)
-	ReadByCorrelationID(string) ([]Event, error)
+	Read(StreamPosition) (EventEnvelope, error)
+	ReadByCorrelationID(string) ([]EventEnvelope, error)
 	Write([]Event) error
-}
-
-type StreamReadResult interface {
-	Event() Event
-	NextStreamPosition() StreamPosition
 }
 
 type StreamPosition interface {
 	Value() interface{}
+}
+
+type EventEnvelope interface {
+	Event() Event
+	StreamPosition() StreamPosition
+	NextStreamPosition() StreamPosition
+	Timestamp() time.Time
 }
 
 type Event interface {

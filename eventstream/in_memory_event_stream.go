@@ -1,21 +1,25 @@
 package eventstream
 
+import (
+	"time"
+)
+
 func NewInMemoryEventStream() *inMemoryEventStream {
 	return &inMemoryEventStream{}
 }
 
 type inMemoryEventStream struct {
-	events []Event
+	envelopes []EventEnvelope
 }
 
 func (s *inMemoryEventStream) FirstPosition() StreamPosition {
 	return &inMemoryStreamPosition{value: 0}
 }
 
-func (s *inMemoryEventStream) Read(position StreamPosition) (StreamReadResult, error) {
+func (s *inMemoryEventStream) Read(position StreamPosition) (EventEnvelope, error) {
 	streamPosition := position.Value().(uint64)
 
-	count := uint64(len(s.events))
+	count := uint64(len(s.envelopes))
 
 	if count == 0 {
 		return nil, nil
@@ -25,17 +29,14 @@ func (s *inMemoryEventStream) Read(position StreamPosition) (StreamReadResult, e
 		return nil, nil
 	}
 
-	return &inMemoryStreamReadResult{
-		event:        s.events[streamPosition],
-		nextPosition: &inMemoryStreamPosition{value: streamPosition + 1},
-	}, nil
+	return s.envelopes[streamPosition], nil
 }
 
-func (s *inMemoryEventStream) ReadByCorrelationID(correlationID string) ([]Event, error) {
-	correlatedEvents := make([]Event, 0)
-	for _, event := range s.events {
-		if event.CorrelationID() == correlationID {
-			correlatedEvents = append(correlatedEvents, event)
+func (s *inMemoryEventStream) ReadByCorrelationID(correlationID string) ([]EventEnvelope, error) {
+	correlatedEvents := make([]EventEnvelope, 0)
+	for _, envelope := range s.envelopes {
+		if envelope.Event().CorrelationID() == correlationID {
+			correlatedEvents = append(correlatedEvents, envelope)
 		}
 	}
 
@@ -43,10 +44,23 @@ func (s *inMemoryEventStream) ReadByCorrelationID(correlationID string) ([]Event
 }
 
 func (s *inMemoryEventStream) Write(events []Event) error {
-	s.events = append(s.events, events...)
+	for _, event := range events {
+		s.envelopes = append(s.envelopes, &inMemoryEventEnvelope{
+			event:          event,
+			streamPosition: &inMemoryStreamPosition{value: uint64(len(s.envelopes))},
+			timestamp:      time.Now(),
+		})
+	}
+
 	return nil
 }
 
 func (s *inMemoryEventStream) InMemoryReadAll() []Event {
-	return s.events
+	events := []Event{}
+
+	for _, envelope := range s.envelopes {
+		events = append(events, envelope.Event())
+	}
+
+	return events
 }
