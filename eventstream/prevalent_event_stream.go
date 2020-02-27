@@ -1,152 +1,70 @@
 package eventstream
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"reflect"
-	"sort"
-	"sync"
-
-	"github.com/google/uuid"
+	"time"
 )
 
 type prevalentEventStream struct {
-	sync.Mutex
-	memory         *inMemoryEventStream
-	streamPosition uint64
-	streamFolder   string
+	store     PrevalentStreamStore
+	envelopes []*prevalentEventEnvelope
 }
 
-type streamBatch struct {
-	Events []*streamBatchEvent
-}
-
-type streamBatchEvent struct {
-	Position uint64
-	Type     string
-	Event    []byte
-}
-
-// TODO: break this down into multiple functions or change it to be lazy
-func LoadPrevalentEventStream(streamFolder string, eventRegistryMap map[string]Event) (*prevalentEventStream, error) {
-	files, err := ioutil.ReadDir(streamFolder)
-	if err != nil {
-		return nil, err
-	}
-
-	allStreamBatchEvents := []*streamBatchEvent{}
-
-	for _, f := range files { // TODO: read all files in parallel
-		content, err := ioutil.ReadFile(f.Name())
-		if err != nil {
-			return nil, err
-		}
-
-		streamBatchEvents := []*streamBatchEvent{}
-		err = json.Unmarshal(content, streamBatchEvents)
-		if err != nil {
-			return nil, err
-		}
-
-		allStreamBatchEvents = append(allStreamBatchEvents, streamBatchEvents...)
-	}
-
-	sort.Slice(allStreamBatchEvents, func(i, j int) bool {
-		return allStreamBatchEvents[i].Position < allStreamBatchEvents[j].Position
-	})
-
-	events := []Event{}
-	for _, streamEvent := range allStreamBatchEvents {
-		t, ok := eventRegistryMap[streamEvent.Type]
-		if !ok {
-			return nil, fmt.Errorf("event type not mapped")
-		}
-
-		tCopy := reflect.New(reflect.ValueOf(t).Elem().Type()).Interface().(Event)
-
-		err := json.Unmarshal(streamEvent.Event, tCopy)
-		if err != nil {
-			return nil, err
-		}
-
-		events = append(events, tCopy)
-	}
-
-	memory := NewInMemoryEventStream()
-	err = memory.Write(events)
-	if err != nil {
-		return nil, err
-	}
-
+func NewPrevalentEventStream(store PrevalentStreamStore, envelopes []*prevalentEventEnvelope) *prevalentEventStream {
 	return &prevalentEventStream{
-		memory:         memory,
-		streamPosition: uint64(len(events) - 1),
-		streamFolder:   streamFolder,
-	}, nil
+		store:     store,
+		envelopes: envelopes,
+	}
 }
 
 func (p *prevalentEventStream) FirstPosition() StreamPosition {
-	return p.memory.FirstPosition()
+	return newPrevalentStreamPosition(0)
 }
 
-func (p *prevalentEventStream) Read(position StreamPosition) (StreamReadResult, error) {
-	return p.memory.Read(position)
+func (p *prevalentEventStream) Read(position StreamPosition) (EventEnvelope, error) {
+	streamPosition := position.Value().(uint64)
+
+	count := uint64(len(p.envelopes))
+
+	if count == 0 {
+		return nil, nil
+	}
+
+	if streamPosition+1 > count {
+		return nil, nil
+	}
+
+	return p.envelopes[streamPosition], nil
 }
 
-func (p *prevalentEventStream) ReadByCorrelationID(id string) ([]Event, error) {
-	return p.memory.ReadByCorrelationID(id)
+func (p *prevalentEventStream) ReadByCorrelationID(correlationID string) ([]EventEnvelope, error) {
+	correlatedEvents := make([]EventEnvelope, 0)
+	for _, envelope := range p.envelopes {
+		if envelope.Event().CorrelationID() == correlationID {
+			correlatedEvents = append(correlatedEvents, envelope)
+		}
+	}
+
+	return correlatedEvents, nil
 }
 
 func (p *prevalentEventStream) Write(events []Event) error {
-	p.Mutex.Lock()
-	defer p.Mutex.Unlock()
-
-	err := p.saveToDist(events)
-	if err != nil {
-		return err
-	}
-
-	return p.memory.Write(events)
-}
-
-func (p *prevalentEventStream) saveToDist(events []Event) error {
-	streamPosition := p.streamPosition
-
-	streamBatchEvents := []*streamBatchEvent{}
+	envelopes := []*prevalentEventEnvelope{}
+	streamPosition := uint64(len(p.envelopes))
 	for _, event := range events {
-		payload, err := json.Marshal(event)
-		if err != nil {
-			return err
-		}
-
-		streamBatchEvents = append(streamBatchEvents, &streamBatchEvent{
-			Position: streamPosition,
-			Type:     event.Type(),
-			Event:    payload,
-		})
-
+		envelopes = append(envelopes, newPrevalentEventEnvelope(
+			event,
+			newPrevalentStreamPosition(streamPosition),
+			time.Now(),
+		))
 		streamPosition++
 	}
 
-	batchPayload, err := json.Marshal(streamBatch{Events: streamBatchEvents})
+	err := p.store.Write(envelopes)
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(
-		fmt.Sprintf("%s/%s", p.streamFolder, uuid.New().String()),
-		batchPayload,
-		0644,
-	)
-	if err != nil {
-		return err
-	}
+	p.envelopes = append(p.envelopes, envelopes...)
 
-	p.streamPosition = streamPosition
 	return nil
-}
-
-func loadFromDisk(streamFolder string) ([]Event, error) {
-
 }

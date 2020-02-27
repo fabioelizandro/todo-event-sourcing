@@ -10,7 +10,7 @@ import (
 )
 
 func Test_it_lists_all_created_tasks(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	assert.NoError(t, eventStream.Write([]eventstream.Event{
 		&task.EvtTaskCreated{ID: "123", Description: "Do the dishes", CreatedAt: 0},
 		&task.EvtTaskCreated{ID: "456", Description: "Clean house", CreatedAt: 1},
@@ -36,7 +36,7 @@ func Test_it_lists_all_created_tasks(t *testing.T) {
 }
 
 func Test_it_updates_task_descriptions(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	assert.NoError(t, eventStream.Write([]eventstream.Event{
 		&task.EvtTaskCreated{ID: "123", Description: "Do the dishes"},
 		&task.EvtTaskDescriptionUpdated{ID: "123", Description: "Clean house"},
@@ -57,7 +57,7 @@ func Test_it_updates_task_descriptions(t *testing.T) {
 }
 
 func Test_it_marks_task_as_completed(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	assert.NoError(t, eventStream.Write([]eventstream.Event{
 		&task.EvtTaskCreated{ID: "123", Description: "Do the dishes", Completed: false},
 		&task.EvtTaskCompleted{ID: "123"},
@@ -78,7 +78,7 @@ func Test_it_marks_task_as_completed(t *testing.T) {
 }
 
 func Test_it_shows_task_by_id(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	assert.NoError(t, eventStream.Write([]eventstream.Event{
 		&task.EvtTaskCreated{ID: "123", Description: "Do the dishes", Completed: false},
 	}))
@@ -96,7 +96,7 @@ func Test_it_shows_task_by_id(t *testing.T) {
 }
 
 func Test_it_returns_nil_when_task_not_found(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	projection := taskprojection.NewTaskProjection(eventStream)
 	assert.Nil(t, projection.Task("123"))
 }

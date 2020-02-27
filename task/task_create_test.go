@@ -11,7 +11,7 @@ import (
 )
 
 func Test_it_create_tasks(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskCreate{
 		ID:          uuid.New().String(),
 		Description: "Do the dishes",
@@ -30,7 +30,7 @@ func Test_it_create_tasks(t *testing.T) {
 			CreatedAt:   cmd.CreatedAt,
 		},
 	}
-	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
+	assert.Equal(t, expectedEvents, eventStream.Tape())
 }
 
 func Test_it_requires_description_when_creating(t *testing.T) {
@@ -39,7 +39,7 @@ func Test_it_requires_description_when_creating(t *testing.T) {
 		Description: "",
 		CreatedAt:   time.Now().UnixNano(),
 	}
-	cmdHandler := task.NewCmdHandler(eventstream.NewInMemoryEventStream())
+	cmdHandler := task.NewCmdHandler(eventstream.NewRecordingEventStream())
 
 	rejection, err := cmdHandler.Handle(cmd)
 	assert.NoError(t, err)
@@ -48,7 +48,7 @@ func Test_it_requires_description_when_creating(t *testing.T) {
 }
 
 func Test_it_does_not_create_tasks_with_same_id(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskCreate{ID: uuid.New().String(), Description: "Do the dishes"}
 	cmdHandler := task.NewCmdHandler(eventStream)
 
@@ -66,5 +66,5 @@ func Test_it_does_not_create_tasks_with_same_id(t *testing.T) {
 			Description: cmd.Description,
 		},
 	}
-	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
+	assert.Equal(t, expectedEvents, eventStream.Tape())
 }

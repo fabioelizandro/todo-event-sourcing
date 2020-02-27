@@ -10,7 +10,7 @@ import (
 )
 
 func Test_it_marks_task_as_completed(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
 	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
@@ -24,11 +24,11 @@ func Test_it_marks_task_as_completed(t *testing.T) {
 		createdEvent,
 		&task.EvtTaskCompleted{ID: cmd.ID},
 	}
-	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
+	assert.Equal(t, expectedEvents, eventStream.Tape())
 }
 
 func Test_it_ignores_complete_cmd_when_is_complete_already(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
 	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
@@ -46,11 +46,11 @@ func Test_it_ignores_complete_cmd_when_is_complete_already(t *testing.T) {
 		createdEvent,
 		&task.EvtTaskCompleted{ID: cmd.ID},
 	}
-	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
+	assert.Equal(t, expectedEvents, eventStream.Tape())
 }
 
 func Test_it_ignores_cmd_complete_for_not_found_tasks(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
 
 	cmdHandler := task.NewCmdHandler(eventStream)
@@ -58,5 +58,5 @@ func Test_it_ignores_cmd_complete_for_not_found_tasks(t *testing.T) {
 	assert.Nil(t, rejection)
 	assert.NoError(t, err)
 
-	assert.Equal(t, 0, len(eventStream.InMemoryReadAll()))
+	assert.Equal(t, 0, len(eventStream.Tape()))
 }

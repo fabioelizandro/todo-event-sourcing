@@ -16,7 +16,7 @@ import (
 
 func main() {
 	zlog := logger.NewZLog()
-	stream := eventstream.NewInMemoryEventStream()
+	stream := loadStream()
 	commandHandler := task.NewCmdHandler(stream)
 	projection := taskprojection.NewTaskProjection(stream)
 	routeAdapter := newRouteAdapter(zlog)
@@ -34,6 +34,24 @@ func main() {
 	go pollEventStream(projection, zlog)
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func loadStream() eventstream.EventStream {
+	store := eventstream.NewDiskPrevalentEventStore(
+		"/tmp/todo-event-sourcing-stream",
+		[]eventstream.Event{
+			&task.EvtTaskCompleted{},
+			&task.EvtTaskCreated{},
+			&task.EvtTaskDescriptionUpdated{},
+		},
+	)
+
+	envelopes, err := store.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return eventstream.NewPrevalentEventStream(store, envelopes)
 }
 
 func newRouteAdapter(log logger.Log) http_essentials.StdHttpRouteAdapter {

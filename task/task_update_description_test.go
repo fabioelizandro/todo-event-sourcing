@@ -10,7 +10,7 @@ import (
 )
 
 func Test_it_updates_task_description(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
 	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
@@ -27,11 +27,11 @@ func Test_it_updates_task_description(t *testing.T) {
 			Description: cmd.NewDescription,
 		},
 	}
-	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
+	assert.Equal(t, expectedEvents, eventStream.Tape())
 }
 
 func Test_it_requires_description_when_updating(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: ""}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
 	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
@@ -44,7 +44,7 @@ func Test_it_requires_description_when_updating(t *testing.T) {
 }
 
 func Test_it_ignores_cmd_when_new_description_is_equal_to_current(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 	createdEvent := &task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"}
 	assert.NoError(t, eventStream.Write([]eventstream.Event{createdEvent}))
@@ -65,11 +65,11 @@ func Test_it_ignores_cmd_when_new_description_is_equal_to_current(t *testing.T) 
 			Description: cmd.NewDescription,
 		},
 	}
-	assert.Equal(t, expectedEvents, eventStream.InMemoryReadAll())
+	assert.Equal(t, expectedEvents, eventStream.Tape())
 }
 
 func Test_it_ignores_cmd_when_task_is_not_found(t *testing.T) {
-	eventStream := eventstream.NewInMemoryEventStream()
+	eventStream := eventstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskUpdateDescription{ID: uuid.New().String(), NewDescription: "Clean kitchen"}
 
 	cmdHandler := task.NewCmdHandler(eventStream)
@@ -77,5 +77,5 @@ func Test_it_ignores_cmd_when_task_is_not_found(t *testing.T) {
 	assert.Nil(t, rejection)
 	assert.NoError(t, err)
 
-	assert.Equal(t, 0, len(eventStream.InMemoryReadAll()))
+	assert.Equal(t, 0, len(eventStream.Tape()))
 }
