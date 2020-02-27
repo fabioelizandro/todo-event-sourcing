@@ -38,3 +38,7 @@ func (r *recordingStream) Write(events []Event) error {
 func (r *recordingStream) Tape() []Event {
 	return r.memory
 }
+
+func (r *recordingStream) EraseTape() {
+	r.memory = []Event{}
+}
