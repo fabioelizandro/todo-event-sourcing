@@ -20,7 +20,7 @@ func Test_it_persists_events_to_disk(t *testing.T) {
 	envelopes, err := store.Load()
 	assert.NoError(t, err)
 
-	stream := evtstream.NewPrevalentEventStream(store, envelopes)
+	stream := evtstream.NewPrevalentEventStream(store, envelopes, evtstream.NewUTCCLock())
 	assert.NoError(t, stream.Write([]evtstream.Event{
 		&SomethingHappened{ID: "1", Data: "foo"},
 		&SomethingElseHappened{ID: "2", Data: "bar"},
@@ -29,7 +29,7 @@ func Test_it_persists_events_to_disk(t *testing.T) {
 	envelopes, err = store.Load()
 	assert.NoError(t, err)
 
-	stream = evtstream.NewPrevalentEventStream(store, envelopes)
+	stream = evtstream.NewPrevalentEventStream(store, envelopes, evtstream.NewUTCCLock())
 	envelope1, err := stream.Read(stream.FirstPosition())
 	assert.NoError(t, err)
 

@@ -1,15 +1,18 @@
 package evtstream
 
+import "time"
+
 type recordingStream struct {
 	stream EventStream
 	memory []Event
 }
 
 func NewRecordingEventStream() *recordingStream {
-	return &recordingStream{stream: NewPrevalentEventStream(
-		newNoopPrevalentStreamStore(),
-		[]*prevalentEventEnvelope{},
-	)}
+	return &recordingStream{
+		stream: NewPrevalentEventStream(newNoopPrevalentStreamStore(),
+			[]*prevalentEventEnvelope{},
+			NewFrozenClock(time.Unix(946684800, 0).UTC()),
+		)}
 }
 
 func (r *recordingStream) FirstPosition() StreamPosition {

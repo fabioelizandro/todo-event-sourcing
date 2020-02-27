@@ -1,18 +1,16 @@
 package evtstream
 
-import (
-	"time"
-)
-
 type prevalentEventStream struct {
-	store     PrevalentStreamStore
-	envelopes []*prevalentEventEnvelope
+	store       PrevalentStreamStore
+	envelopes   []*prevalentEventEnvelope
+	streamClock StreamClock
 }
 
-func NewPrevalentEventStream(store PrevalentStreamStore, envelopes []*prevalentEventEnvelope) *prevalentEventStream {
+func NewPrevalentEventStream(store PrevalentStreamStore, envelopes []*prevalentEventEnvelope, streamClock StreamClock) *prevalentEventStream {
 	return &prevalentEventStream{
-		store:     store,
-		envelopes: envelopes,
+		store:       store,
+		envelopes:   envelopes,
+		streamClock: streamClock,
 	}
 }
 
@@ -54,7 +52,7 @@ func (p *prevalentEventStream) Write(events []Event) error {
 		envelopes = append(envelopes, newPrevalentEventEnvelope(
 			event,
 			newPrevalentStreamPosition(streamPosition),
-			time.Now(),
+			p.streamClock.Now(),
 		))
 		streamPosition++
 	}

@@ -51,7 +51,7 @@ func loadStream() evtstream.EventStream {
 		log.Fatal(err)
 	}
 
-	return evtstream.NewPrevalentEventStream(store, envelopes)
+	return evtstream.NewPrevalentEventStream(store, envelopes, evtstream.NewUTCCLock())
 }
 
 func newRouteAdapter(log logger.Log) http_essentials.StdHttpRouteAdapter {
