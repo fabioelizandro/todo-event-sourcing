@@ -10,7 +10,10 @@ type EventStream interface {
 }
 
 type StreamPosition interface {
-	Value() interface{}
+	After(StreamPosition) bool
+	Before(StreamPosition) bool
+	Next() StreamPosition
+	Value() int64
 }
 
 type EventEnvelope interface {

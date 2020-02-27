@@ -19,9 +19,9 @@ func (p *prevalentEventStream) FirstPosition() StreamPosition {
 }
 
 func (p *prevalentEventStream) Read(position StreamPosition) (EventEnvelope, error) {
-	streamPosition := position.Value().(uint64)
+	streamPosition := position.Value()
 
-	count := uint64(len(p.envelopes))
+	count := int64(len(p.envelopes))
 
 	if count == 0 {
 		return nil, nil
@@ -47,7 +47,7 @@ func (p *prevalentEventStream) ReadByCorrelationID(correlationID string) ([]Even
 
 func (p *prevalentEventStream) Write(events []Event) error {
 	envelopes := []*prevalentEventEnvelope{}
-	streamPosition := uint64(len(p.envelopes))
+	streamPosition := int64(len(p.envelopes))
 	for _, event := range events {
 		envelopes = append(envelopes, newPrevalentEventEnvelope(
 			event,

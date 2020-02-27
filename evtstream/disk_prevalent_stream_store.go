@@ -50,7 +50,7 @@ func (d *diskPrevalentStreamStore) Load() ([]*prevalentEventEnvelope, error) {
 	}
 
 	sort.Slice(envelopes, func(i, j int) bool {
-		return envelopes[i].StreamPosition().Value().(uint64) < envelopes[j].StreamPosition().Value().(uint64)
+		return envelopes[i].StreamPosition().Before(envelopes[j].StreamPosition())
 	})
 
 	return envelopes, nil
@@ -110,7 +110,7 @@ func (d *diskPrevalentStreamStore) decode(bytes []byte) ([]*prevalentEventEnvelo
 			return nil, err
 		}
 
-		var streamPosition uint64
+		var streamPosition int64
 		err = json.Unmarshal(*encodedEnvelope["streamPosition"], &streamPosition)
 		if err != nil {
 			return nil, err

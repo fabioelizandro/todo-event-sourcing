@@ -31,5 +31,5 @@ func (i *prevalentEventEnvelope) Event() Event {
 }
 
 func (i *prevalentEventEnvelope) NextStreamPosition() StreamPosition {
-	return newPrevalentStreamPosition(i.streamPosition.Value().(uint64) + 1)
+	return i.streamPosition.Next()
 }
