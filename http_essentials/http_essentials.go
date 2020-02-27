@@ -170,7 +170,7 @@ func newRequestBody(headers Headers, rawBody []byte) (RequestBody, error) {
 
 func newJsonRequestBody(rawBody []byte) (*jsonRequestBody, error) {
 	body := map[string]string{}
-	err := json.Unmarshal(rawBody, body)
+	err := json.Unmarshal(rawBody, &body)
 	if err != nil {
 		return nil, err
 	}

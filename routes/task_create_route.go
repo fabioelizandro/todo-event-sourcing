@@ -31,9 +31,15 @@ func (t *taskCreateRoute) Handle(r http_essentials.Request) (http_essentials.Res
 		CreatedAt:   time.Now().UnixNano(),
 	}
 
-	_, err := t.commandHandler.Handle(cmd)
+	rejection, err := t.commandHandler.Handle(cmd)
 	if err != nil {
 		return nil, err
+	}
+
+	if rejection != nil {
+		return http_essentials.NewJsonResponse(http_essentials.Headers{
+			"status": "400",
+		}, rejection), nil
 	}
 
 	return http_essentials.NewJsonOkResponse(http_essentials.Headers{}), nil

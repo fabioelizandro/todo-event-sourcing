@@ -47,7 +47,7 @@ func (s *stdHttpRouteAdapter) Transform(route Route) func(w http.ResponseWriter,
 func (s *stdHttpRouteAdapter) stdRouteAdapterRequest(r *http.Request) (Request, error) {
 	headers := Headers{}
 	for key, _ := range r.Header {
-		headers[key] = r.Header.Get(key)
+		headers[strings.ToLower(key)] = r.Header.Get(key)
 	}
 
 	rawBody, err := ioutil.ReadAll(r.Body)
