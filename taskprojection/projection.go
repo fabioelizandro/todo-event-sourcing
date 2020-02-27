@@ -1,7 +1,7 @@
 package taskprojection
 
 import (
-	"fabioelizandro/todo-event-sourcing/eventstream"
+	"fabioelizandro/todo-event-sourcing/evtstream"
 	"fabioelizandro/todo-event-sourcing/task"
 	"sort"
 )
@@ -40,12 +40,12 @@ func (f *fakeTaskProjection) CatchupEventStream() error {
 }
 
 type taskProjection struct {
-	es             eventstream.EventStream
-	streamPosition eventstream.StreamPosition
+	es             evtstream.EventStream
+	streamPosition evtstream.StreamPosition
 	tasks          map[string]*Task
 }
 
-func (t *taskProjection) apply(evt eventstream.Event) {
+func (t *taskProjection) apply(evt evtstream.Event) {
 	switch v := evt.(type) {
 	case *task.EvtTaskCreated:
 		t.applyTaskCreated(v)
@@ -106,7 +106,7 @@ func (t *taskProjection) Task(ID string) *Task {
 	return t.tasks[ID]
 }
 
-func NewTaskProjection(es eventstream.EventStream) *taskProjection {
+func NewTaskProjection(es evtstream.EventStream) *taskProjection {
 	return &taskProjection{
 		es:             es,
 		tasks:          make(map[string]*Task, 0),

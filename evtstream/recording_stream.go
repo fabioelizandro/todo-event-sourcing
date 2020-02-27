@@ -1,4 +1,4 @@
-package eventstream
+package evtstream
 
 type recordingStream struct {
 	stream EventStream

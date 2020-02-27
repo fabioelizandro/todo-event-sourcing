@@ -1,7 +1,7 @@
 package task_test
 
 import (
-	"fabioelizandro/todo-event-sourcing/eventstream"
+	"fabioelizandro/todo-event-sourcing/evtstream"
 	"fabioelizandro/todo-event-sourcing/task"
 	"fmt"
 	"testing"
@@ -11,7 +11,7 @@ import (
 
 func Test_it_returns_an_error_when_cmd_not_found(t *testing.T) {
 	type CmdNotFound struct{}
-	cmdHandler := task.NewCmdHandler(eventstream.NewRecordingEventStream())
+	cmdHandler := task.NewCmdHandler(evtstream.NewRecordingEventStream())
 
 	cmd := &CmdNotFound{}
 	_, err := cmdHandler.Handle(cmd)

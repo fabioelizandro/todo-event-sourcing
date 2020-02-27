@@ -1,7 +1,7 @@
 package task
 
 import (
-	"fabioelizandro/todo-event-sourcing/eventstream"
+	"fabioelizandro/todo-event-sourcing/evtstream"
 	"fmt"
 )
 
@@ -27,10 +27,10 @@ func (f *fakeCmdHandler) ExecutedCmds() []interface{} {
 }
 
 type cmdHandler struct {
-	eventStream eventstream.EventStream
+	eventStream evtstream.EventStream
 }
 
-func NewCmdHandler(eventStream eventstream.EventStream) *cmdHandler {
+func NewCmdHandler(eventStream evtstream.EventStream) *cmdHandler {
 	return &cmdHandler{eventStream: eventStream}
 }
 

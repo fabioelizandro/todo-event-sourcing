@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fabioelizandro/todo-event-sourcing/eventstream"
+	"fabioelizandro/todo-event-sourcing/evtstream"
 	"fabioelizandro/todo-event-sourcing/http_essentials"
 	"fabioelizandro/todo-event-sourcing/logger"
 	"fabioelizandro/todo-event-sourcing/routes"
@@ -36,10 +36,10 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func loadStream() eventstream.EventStream {
-	store := eventstream.NewDiskPrevalentEventStore(
+func loadStream() evtstream.EventStream {
+	store := evtstream.NewDiskPrevalentEventStore(
 		"/tmp/todo-event-sourcing-stream",
-		eventstream.NewInMemoryEventRegistry([]eventstream.Event{
+		evtstream.NewInMemoryEventRegistry([]evtstream.Event{
 			&task.EvtTaskCompleted{},
 			&task.EvtTaskCreated{},
 			&task.EvtTaskDescriptionUpdated{},
@@ -51,7 +51,7 @@ func loadStream() eventstream.EventStream {
 		log.Fatal(err)
 	}
 
-	return eventstream.NewPrevalentEventStream(store, envelopes)
+	return evtstream.NewPrevalentEventStream(store, envelopes)
 }
 
 func newRouteAdapter(log logger.Log) http_essentials.StdHttpRouteAdapter {

@@ -1,6 +1,6 @@
 package task
 
-import "fabioelizandro/todo-event-sourcing/eventstream"
+import "fabioelizandro/todo-event-sourcing/evtstream"
 
 type taskDomainModel struct {
 	id          string
@@ -8,7 +8,7 @@ type taskDomainModel struct {
 	completed   bool
 }
 
-func (m *taskDomainModel) apply(evtEnvelope eventstream.EventEnvelope) {
+func (m *taskDomainModel) apply(evtEnvelope evtstream.EventEnvelope) {
 	evt := evtEnvelope.Event()
 
 	switch v := evt.(type) {
@@ -35,8 +35,8 @@ func (m *taskDomainModel) applyTaskCompleted(evt *EvtTaskCompleted) {
 	m.completed = true
 }
 
-func (m *taskDomainModel) updateDescription(newDescription string) ([]eventstream.Event, CmdRejection) {
-	events := make([]eventstream.Event, 0)
+func (m *taskDomainModel) updateDescription(newDescription string) ([]evtstream.Event, CmdRejection) {
+	events := make([]evtstream.Event, 0)
 
 	if m.id == "" {
 		return events, nil
@@ -56,8 +56,8 @@ func (m *taskDomainModel) updateDescription(newDescription string) ([]eventstrea
 	return events, nil
 }
 
-func (m *taskDomainModel) complete() []eventstream.Event {
-	events := make([]eventstream.Event, 0)
+func (m *taskDomainModel) complete() []evtstream.Event {
+	events := make([]evtstream.Event, 0)
 
 	if m.id == "" {
 		return events
@@ -72,8 +72,8 @@ func (m *taskDomainModel) complete() []eventstream.Event {
 	return events
 }
 
-func (m *taskDomainModel) create(ID string, description string, createdAt int64) ([]eventstream.Event, CmdRejection) {
-	events := make([]eventstream.Event, 0)
+func (m *taskDomainModel) create(ID string, description string, createdAt int64) ([]evtstream.Event, CmdRejection) {
+	events := make([]evtstream.Event, 0)
 
 	if m.id != "" {
 		return events, nil
@@ -83,7 +83,7 @@ func (m *taskDomainModel) create(ID string, description string, createdAt int64)
 		return nil, &CmdRejectionRequiredField{Name: "Description"}
 	}
 
-	events = []eventstream.Event{
+	events = []evtstream.Event{
 		&EvtTaskCreated{
 			ID:          ID,
 			Description: description,

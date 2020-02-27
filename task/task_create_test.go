@@ -1,7 +1,7 @@
 package task_test
 
 import (
-	"fabioelizandro/todo-event-sourcing/eventstream"
+	"fabioelizandro/todo-event-sourcing/evtstream"
 	"fabioelizandro/todo-event-sourcing/task"
 	"testing"
 	"time"
@@ -11,7 +11,7 @@ import (
 )
 
 func Test_it_create_tasks(t *testing.T) {
-	eventStream := eventstream.NewRecordingEventStream()
+	eventStream := evtstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskCreate{
 		ID:          uuid.New().String(),
 		Description: "Do the dishes",
@@ -23,7 +23,7 @@ func Test_it_create_tasks(t *testing.T) {
 	assert.Nil(t, rejection)
 	assert.NoError(t, err)
 
-	expectedEvents := []eventstream.Event{
+	expectedEvents := []evtstream.Event{
 		&task.EvtTaskCreated{
 			ID:          cmd.ID,
 			Description: cmd.Description,
@@ -39,7 +39,7 @@ func Test_it_requires_description_when_creating(t *testing.T) {
 		Description: "",
 		CreatedAt:   time.Now().UnixNano(),
 	}
-	cmdHandler := task.NewCmdHandler(eventstream.NewRecordingEventStream())
+	cmdHandler := task.NewCmdHandler(evtstream.NewRecordingEventStream())
 
 	rejection, err := cmdHandler.Handle(cmd)
 	assert.NoError(t, err)
@@ -48,7 +48,7 @@ func Test_it_requires_description_when_creating(t *testing.T) {
 }
 
 func Test_it_does_not_create_tasks_with_same_id(t *testing.T) {
-	eventStream := eventstream.NewRecordingEventStream()
+	eventStream := evtstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskCreate{ID: uuid.New().String(), Description: "Do the dishes"}
 	cmdHandler := task.NewCmdHandler(eventStream)
 
@@ -60,7 +60,7 @@ func Test_it_does_not_create_tasks_with_same_id(t *testing.T) {
 	assert.Nil(t, rejection)
 	assert.NoError(t, err)
 
-	expectedEvents := []eventstream.Event{
+	expectedEvents := []evtstream.Event{
 		&task.EvtTaskCreated{
 			ID:          cmd.ID,
 			Description: cmd.Description,

@@ -1,4 +1,4 @@
-package eventstream
+package evtstream
 
 type noopPrevalentStreamStore struct {
 }

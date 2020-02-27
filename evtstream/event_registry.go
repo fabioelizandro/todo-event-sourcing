@@ -1,4 +1,4 @@
-package eventstream
+package evtstream
 
 import (
 	"fmt"

@@ -1,7 +1,7 @@
 package task_test
 
 import (
-	"fabioelizandro/todo-event-sourcing/eventstream"
+	"fabioelizandro/todo-event-sourcing/evtstream"
 	"fabioelizandro/todo-event-sourcing/task"
 	"testing"
 
@@ -10,9 +10,9 @@ import (
 )
 
 func Test_it_marks_task_as_completed(t *testing.T) {
-	eventStream := eventstream.NewRecordingEventStream()
+	eventStream := evtstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
-	assert.NoError(t, eventStream.Write([]eventstream.Event{
+	assert.NoError(t, eventStream.Write([]evtstream.Event{
 		&task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"},
 	}))
 	eventStream.EraseTape()
@@ -22,15 +22,15 @@ func Test_it_marks_task_as_completed(t *testing.T) {
 	assert.Nil(t, rejection)
 	assert.NoError(t, err)
 
-	assert.Equal(t, []eventstream.Event{
+	assert.Equal(t, []evtstream.Event{
 		&task.EvtTaskCompleted{ID: cmd.ID},
 	}, eventStream.Tape())
 }
 
 func Test_it_ignores_complete_cmd_when_is_complete_already(t *testing.T) {
-	eventStream := eventstream.NewRecordingEventStream()
+	eventStream := evtstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
-	assert.NoError(t, eventStream.Write([]eventstream.Event{
+	assert.NoError(t, eventStream.Write([]evtstream.Event{
 		&task.EvtTaskCreated{ID: cmd.ID, Description: "Do the dishes"},
 	}))
 	eventStream.EraseTape()
@@ -44,13 +44,13 @@ func Test_it_ignores_complete_cmd_when_is_complete_already(t *testing.T) {
 	assert.Nil(t, rejection)
 	assert.NoError(t, err)
 
-	assert.Equal(t, []eventstream.Event{
+	assert.Equal(t, []evtstream.Event{
 		&task.EvtTaskCompleted{ID: cmd.ID},
 	}, eventStream.Tape())
 }
 
 func Test_it_ignores_cmd_complete_for_not_found_tasks(t *testing.T) {
-	eventStream := eventstream.NewRecordingEventStream()
+	eventStream := evtstream.NewRecordingEventStream()
 	cmd := &task.CmdTaskComplete{ID: uuid.New().String()}
 
 	cmdHandler := task.NewCmdHandler(eventStream)
