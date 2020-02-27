@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"sort"
 	"time"
 
@@ -14,19 +13,13 @@ import (
 
 type diskPrevalentStreamStore struct {
 	folder   string
-	eventMap map[string]Event
+	registry EventRegistry
 }
 
-func NewDiskPrevalentEventStore(folder string, events []Event) *diskPrevalentStreamStore {
-	eventMap := map[string]Event{}
-
-	for _, event := range events {
-		eventMap[event.Type()] = event
-	}
-
+func NewDiskPrevalentEventStore(folder string, registry EventRegistry) *diskPrevalentStreamStore {
 	return &diskPrevalentStreamStore{
 		folder:   folder,
-		eventMap: eventMap,
+		registry: registry,
 	}
 }
 
@@ -135,15 +128,18 @@ func (d *diskPrevalentStreamStore) decode(bytes []byte) ([]*prevalentEventEnvelo
 			return nil, err
 		}
 
-		eventStruct := reflect.New(reflect.ValueOf(d.eventMap[eventType]).Elem().Type()).Interface().(Event)
+		eventInstance, err := d.registry.NewEvent(eventType)
+		if err != nil {
+			return nil, err
+		}
 
-		err = json.Unmarshal([]byte(event), &eventStruct)
+		err = json.Unmarshal([]byte(event), &eventInstance)
 		if err != nil {
 			return nil, err
 		}
 
 		envelopes = append(envelopes, newPrevalentEventEnvelope(
-			eventStruct,
+			eventInstance,
 			newPrevalentStreamPosition(streamPosition),
 			timestamp,
 		))

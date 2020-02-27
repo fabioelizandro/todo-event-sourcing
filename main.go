@@ -39,11 +39,11 @@ func main() {
 func loadStream() eventstream.EventStream {
 	store := eventstream.NewDiskPrevalentEventStore(
 		"/tmp/todo-event-sourcing-stream",
-		[]eventstream.Event{
+		eventstream.NewInMemoryEventRegistry([]eventstream.Event{
 			&task.EvtTaskCompleted{},
 			&task.EvtTaskCreated{},
 			&task.EvtTaskDescriptionUpdated{},
-		},
+		}),
 	)
 
 	envelopes, err := store.Load()
