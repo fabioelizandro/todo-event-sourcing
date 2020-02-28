@@ -4,7 +4,7 @@ import "time"
 
 type recordingStream struct {
 	stream EventStream
-	memory []Event
+	tape   []Event
 }
 
 func NewRecordingEventStream() *recordingStream {
@@ -33,15 +33,15 @@ func (r *recordingStream) Write(events []Event) error {
 		return err
 	}
 
-	r.memory = append(r.memory, events...)
+	r.tape = append(r.tape, events...)
 
 	return nil
 }
 
 func (r *recordingStream) Tape() []Event {
-	return r.memory
+	return r.tape
 }
 
 func (r *recordingStream) EraseTape() {
-	r.memory = []Event{}
+	r.tape = []Event{}
 }
