@@ -2,11 +2,11 @@ package evtstream
 
 type prevalentEventStream struct {
 	store       PrevalentStreamStore
-	envelopes   []*prevalentEventEnvelope
+	envelopes   []EventEnvelope
 	streamClock StreamClock
 }
 
-func NewPrevalentEventStream(store PrevalentStreamStore, envelopes []*prevalentEventEnvelope, streamClock StreamClock) *prevalentEventStream {
+func NewPrevalentEventStream(store PrevalentStreamStore, envelopes []EventEnvelope, streamClock StreamClock) *prevalentEventStream {
 	return &prevalentEventStream{
 		store:       store,
 		envelopes:   envelopes,
@@ -22,12 +22,7 @@ func (p *prevalentEventStream) Read(position StreamPosition) (EventEnvelope, err
 	streamPosition := position.Value()
 
 	count := int64(len(p.envelopes))
-
-	if count == 0 {
-		return nil, nil
-	}
-
-	if streamPosition+1 > count {
+	if count == 0 || streamPosition+1 > count {
 		return nil, nil
 	}
 
@@ -46,7 +41,7 @@ func (p *prevalentEventStream) ReadByCorrelationID(correlationID string) ([]Even
 }
 
 func (p *prevalentEventStream) Write(events []Event) error {
-	envelopes := []*prevalentEventEnvelope{}
+	envelopes := []EventEnvelope{}
 	streamPosition := int64(len(p.envelopes))
 	for _, event := range events {
 		envelopes = append(envelopes, newPrevalentEventEnvelope(

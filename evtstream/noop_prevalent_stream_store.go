@@ -7,10 +7,10 @@ func newNoopPrevalentStreamStore() *noopPrevalentStreamStore {
 	return &noopPrevalentStreamStore{}
 }
 
-func (n *noopPrevalentStreamStore) Load() ([]*prevalentEventEnvelope, error) {
-	return []*prevalentEventEnvelope{}, nil
+func (n *noopPrevalentStreamStore) Load() ([]EventEnvelope, error) {
+	return []EventEnvelope{}, nil
 }
 
-func (n *noopPrevalentStreamStore) Write([]*prevalentEventEnvelope) error {
+func (n *noopPrevalentStreamStore) Write([]EventEnvelope) error {
 	return nil
 }

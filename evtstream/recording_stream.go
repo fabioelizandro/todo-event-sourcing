@@ -10,7 +10,7 @@ type recordingStream struct {
 func NewRecordingEventStream() *recordingStream {
 	return &recordingStream{
 		stream: NewPrevalentEventStream(newNoopPrevalentStreamStore(),
-			[]*prevalentEventEnvelope{},
+			[]EventEnvelope{},
 			NewFrozenClock(time.Unix(946684800, 0).UTC()),
 		)}
 }

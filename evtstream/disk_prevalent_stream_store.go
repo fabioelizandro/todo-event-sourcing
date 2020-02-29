@@ -23,7 +23,7 @@ func NewDiskPrevalentEventStore(folder string, registry EventRegistry) *diskPrev
 	}
 }
 
-func (d *diskPrevalentStreamStore) Load() ([]*prevalentEventEnvelope, error) {
+func (d *diskPrevalentStreamStore) Load() ([]EventEnvelope, error) {
 	err := os.MkdirAll(d.folder, os.ModePerm)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (d *diskPrevalentStreamStore) Load() ([]*prevalentEventEnvelope, error) {
 		return nil, err
 	}
 
-	envelopes := []*prevalentEventEnvelope{}
+	envelopes := []EventEnvelope{}
 	for _, f := range files {
 		content, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", d.folder, f.Name()))
 		if err != nil {
@@ -56,7 +56,7 @@ func (d *diskPrevalentStreamStore) Load() ([]*prevalentEventEnvelope, error) {
 	return envelopes, nil
 }
 
-func (d *diskPrevalentStreamStore) Write(envelopes []*prevalentEventEnvelope) error {
+func (d *diskPrevalentStreamStore) Write(envelopes []EventEnvelope) error {
 	bytes, err := d.encode(envelopes)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (d *diskPrevalentStreamStore) Write(envelopes []*prevalentEventEnvelope) er
 	return nil
 }
 
-func (d *diskPrevalentStreamStore) encode(envelopes []*prevalentEventEnvelope) ([]byte, error) {
+func (d *diskPrevalentStreamStore) encode(envelopes []EventEnvelope) ([]byte, error) {
 	encodedEnvelopes := []map[string]interface{}{}
 
 	for _, envelope := range envelopes {
@@ -94,14 +94,14 @@ func (d *diskPrevalentStreamStore) encode(envelopes []*prevalentEventEnvelope) (
 	return json.Marshal(encodedEnvelopes)
 }
 
-func (d *diskPrevalentStreamStore) decode(bytes []byte) ([]*prevalentEventEnvelope, error) {
+func (d *diskPrevalentStreamStore) decode(bytes []byte) ([]EventEnvelope, error) {
 	encodedEnvelopes := []map[string]*json.RawMessage{}
 	err := json.Unmarshal(bytes, &encodedEnvelopes)
 	if err != nil {
 		return nil, err
 	}
 
-	envelopes := []*prevalentEventEnvelope{}
+	envelopes := []EventEnvelope{}
 
 	for _, encodedEnvelope := range encodedEnvelopes {
 		var timestamp time.Time
