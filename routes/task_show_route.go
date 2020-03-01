@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"fabioelizandro/todo-event-sourcing/http_essentials"
+	"fabioelizandro/todo-event-sourcing/lib/http_essentials"
 	"fabioelizandro/todo-event-sourcing/taskprojection"
 )
 

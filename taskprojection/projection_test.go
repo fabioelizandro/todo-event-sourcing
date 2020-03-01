@@ -1,7 +1,7 @@
 package taskprojection_test
 
 import (
-	"fabioelizandro/todo-event-sourcing/evtstream"
+	"fabioelizandro/todo-event-sourcing/lib/evtstream"
 	"fabioelizandro/todo-event-sourcing/task"
 	"fabioelizandro/todo-event-sourcing/taskprojection"
 	"testing"

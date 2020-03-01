@@ -1,7 +1,7 @@
 package task
 
 import (
-	"fabioelizandro/todo-event-sourcing/evtstream"
+	"fabioelizandro/todo-event-sourcing/lib/evtstream"
 	"fmt"
 )
 

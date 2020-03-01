@@ -1,7 +1,7 @@
 package routes_test
 
 import (
-	"fabioelizandro/todo-event-sourcing/http_essentials"
+	"fabioelizandro/todo-event-sourcing/lib/http_essentials"
 	"fabioelizandro/todo-event-sourcing/routes"
 	"fabioelizandro/todo-event-sourcing/task"
 	"testing"

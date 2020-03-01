@@ -3,7 +3,7 @@
 package evtstream_test
 
 import (
-	"fabioelizandro/todo-event-sourcing/evtstream"
+	"fabioelizandro/todo-event-sourcing/lib/evtstream"
 	"fmt"
 	"testing"
 

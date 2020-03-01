@@ -2,7 +2,7 @@ package routes_test
 
 import (
 	"encoding/json"
-	"fabioelizandro/todo-event-sourcing/http_essentials"
+	"fabioelizandro/todo-event-sourcing/lib/http_essentials"
 	"fabioelizandro/todo-event-sourcing/routes"
 	"fabioelizandro/todo-event-sourcing/taskprojection"
 	"testing"

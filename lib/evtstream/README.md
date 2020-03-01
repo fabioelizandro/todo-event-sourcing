@@ -10,7 +10,7 @@ in a storage like a database sql or s3 files.
 package main
 
 import (
-	"fabioelizandro/todo-event-sourcing/evtstream"
+	"fabioelizandro/todo-event-sourcing/lib/evtstream"
 	"fmt"
 )
 

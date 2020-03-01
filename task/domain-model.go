@@ -1,6 +1,6 @@
 package task
 
-import "fabioelizandro/todo-event-sourcing/evtstream"
+import "fabioelizandro/todo-event-sourcing/lib/evtstream"
 
 type taskDomainModel struct {
 	id          string

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fabioelizandro/todo-event-sourcing/evtstream"
-	"fabioelizandro/todo-event-sourcing/http_essentials"
+	"fabioelizandro/todo-event-sourcing/lib/evtstream"
+	"fabioelizandro/todo-event-sourcing/lib/http_essentials"
 	"fabioelizandro/todo-event-sourcing/logger"
 	"fabioelizandro/todo-event-sourcing/routes"
 	"fabioelizandro/todo-event-sourcing/task"

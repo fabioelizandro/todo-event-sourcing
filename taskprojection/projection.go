@@ -1,7 +1,7 @@
 package taskprojection
 
 import (
-	"fabioelizandro/todo-event-sourcing/evtstream"
+	"fabioelizandro/todo-event-sourcing/lib/evtstream"
 	"fabioelizandro/todo-event-sourcing/task"
 	"sort"
 )
